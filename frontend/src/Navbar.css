@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap'); /* Example with Alex Brush */
+
+/* Remove default margin and padding from the entire page */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+}
+
+/* Make navbar take full width */
+.navbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #003366; /* UCLouvain Dark Blue */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Adjust logo size */
+.logo {
+    height: 50px;
+    cursor: pointer;
+}
+
+.center-text {
+    flex-grow: 1; /* Allow center text to take up available space */
+    text-align: center; /* Center the text horizontally */
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 40px;
+    font-weight: bold;
+    transition: color 0.3s ease;
+    font-family: 'Alex Brush', cursive;
+}
+
+/* Navigation links */
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    text-decoration: none; /* Remove default underline */
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    transition: color 0.3s ease;
+    border-bottom: 2px solid transparent; /* Add transparent border for underline effect */
+    padding-bottom: 5px; /* Add some space for the underline */
+}
+
+.nav-links a:hover {
+    color: #cccccc;
+    border-bottom-color: #ffffff; /* Add white underline on hover */
+}

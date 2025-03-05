@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import './Story.css';
+import './Search.css';
 
-const Story = () => {
+const Search = () => {
     const [storyText, setStoryText] = useState('');
 
     const [images, setImages] = useState([]);
@@ -9,11 +9,13 @@ const Story = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
 
+    const [responseText, setResponseText] = useState(null);
 
     const handleSubmit = () => {
+        setResponseText(null);
         setImages([]);
 
-        fetch('http://localhost:5001/api/select-images', {
+        fetch('http://localhost:5001/api/search-images', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -46,24 +48,64 @@ const Story = () => {
 
     const closeModal = () => {
         setModalVisible(false);
+        // setSelectedImage(null);
+    };
+
+    const handleChooseClick = () => {
+        fetch('http://localhost:5001/api/generate-story', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                imageUrl: selectedImage.url
+            }),
+        })
+        .then((response) => {
+            if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            setResponseText(data.text);
+            closeModal();
+        })
+        .catch((error) => {
+            console.error("There was a problem with the fetch operation:", error);
+        });
+    };
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(responseText)
+            .then(() => {
+                console.log('Text copied to clipboard!');
+            })
+            .catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+    }
+
+    const handleRegenerateClick = () => {
+        handleChooseClick();
     };
 
     return (
         <div>
             <div className="content-box">
-                <h1>Story Generation Instructions</h1>
+                <h1>Art Search Instructions</h1>
                 <p>
-                    The story generation tool allows you to input a story or a memory (or part of it).
-                    After submitting the text, our AI model will suggest some paintings from our database which can hopefully help you remember more details of the story.
+                    The story generation tool allows you to search for art pieces by typing in some keywords.
+                    Our AI model will return some paintings from our database, and you can then select the one that you find most interesting, and the model will then generate a story based on it. 
                     <br></br>
-                    Feel free to keep on adding details to the text if the art pieces help you!
+                    Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.
                 </p>
             </div>
             <div className="content-box">
-                <h1>Input</h1>
+                <h1>Search</h1>
                 <textarea
-                    className="story-textbox"
-                    placeholder="Write your story here..."
+                    className="search-textbox"
+                    placeholder="Input some keywords here..."
                     value={storyText}
                     onChange={(e) => setStoryText(e.target.value)}
                 />
@@ -72,7 +114,7 @@ const Story = () => {
             {images.length > 0 && (
                 <div className="content-box">
                     <h1>Image Selection</h1>
-                    <p>Our AI model chose these paintings as the ones most resembling your story.
+                    <p>Our AI model chose these paintings as the ones most resembling your input.
                     <br></br>
                     Please choose one of them to generate a continuation to your text.</p>
                     <div className="images-grid">
@@ -88,6 +130,7 @@ const Story = () => {
                             </div>
                         ))}
                     </div>
+                    <button id="images-button" className="submit-button" onClick={handleSubmit}>Refresh Images</button>
                 </div>
             )}
 
@@ -99,7 +142,20 @@ const Story = () => {
                         <img src={selectedImage.url} alt={selectedImage.name} className="modal-image" />
                         <div className="modal-info">
                             <span className="image-name">{selectedImage.name}</span>
+                            <button className="choose-button" onClick={handleChooseClick}>Choose</button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Display response text */}
+            {responseText && (
+                <div id='generated-story' className="content-box">
+                    <h1>AI Generated Story</h1>
+                    <p>{responseText}</p>
+                    <div className="buttons-container">
+                        <button className="submit-button" onClick={handleRegenerateClick}>Regenerate Story</button>
+                        <button className="submit-button" onClick={copyToClipboard}>Copy Text</button>
                     </div>
                 </div>
             )}
@@ -107,4 +163,4 @@ const Story = () => {
     );
 };
 
-export default Story;
+export default Search;

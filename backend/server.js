@@ -22,8 +22,8 @@ app.get('/', (req, res) => {
     res.json({ message: 'Welcome to the home page!' });
 });
 
-// Story generation - Image selection
-app.post('/select-images', (req, res) => {
+// Art Search - Image selection
+app.post('/api/search-images', (req, res) => {
     const story = req.body.story;
 
     // Hardcoded image URLs
@@ -36,15 +36,28 @@ app.post('/select-images', (req, res) => {
     res.json({ images: images });
 });
 
-// Story generation
-app.post('/generate-story', (req, res) => {
+// Art Search - Story generation
+app.post('/api/generate-story', (req, res) => {
     const imageUrl = req.body.imageUrl;
-    const storyText = req.body.storyText;
 
     const sampleText = ` You selected the image at ${imageUrl}.`;
-    const responseText = storyText + sampleText;
+    const responseText = sampleText;
 
     res.json({ text: responseText });
+});
+
+// Story generation - Image selection
+app.post('/api/select-images', (req, res) => {
+    const story = req.body.story;
+
+    // Hardcoded image URLs
+    const images = [
+        'http://localhost:5001/sample_images/antoine-blanchard_place-de-la-concorde.jpg',
+        'http://localhost:5001/sample_images/childe-hassam_white-church-at-newport-aka-church-in-a-new-england-village.jpg',
+        'http://localhost:5001/sample_images/ipolit-strambu_woman-with-umbrella.jpg'
+    ];
+
+    res.json({ images: images });
 });
 
 // Start server

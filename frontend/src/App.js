@@ -5,6 +5,7 @@ import Home from './Home';
 import About from './About';
 import Footer from './Footer';
 import Story from './Story';
+import Search from './Search';
 import './App.css';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
                     <Route path='/story' element={<Story />} />
+                    <Route path="/artsearch" element={<Search />} />
                 </Routes>
             </div>
             <Footer />

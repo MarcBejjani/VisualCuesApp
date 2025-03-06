@@ -6,6 +6,8 @@ import About from './About';
 import Footer from './Footer';
 import Story from './Story';
 import Search from './Search';
+import SignUp from './SignUp';
+import Login from './Login';
 import './App.css';
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
                     <Route path="/about" element={<About />} />
                     <Route path='/story' element={<Story />} />
                     <Route path="/artsearch" element={<Search />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/login" element={<Login />} />
                 </Routes>
             </div>
             <Footer />

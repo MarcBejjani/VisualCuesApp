@@ -1,7 +1,9 @@
-// Import required modules
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const mongoose = require('mongoose');
+const artRoutes = require('./routes/artRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -17,50 +19,27 @@ app.use(express.json());
 // Serve static files from the 'public' directory
 app.use(express.static('public'));
 
+// Use the routes
+app.use(artRoutes);
+app.use(userRoutes);
+
 // Home route
 app.get('/', (req, res) => {
     res.json({ message: 'Welcome to the home page!' });
 });
 
-// Art Search - Image selection
-app.post('/api/search-images', (req, res) => {
-    const story = req.body.story;
-
-    // Hardcoded image URLs
-    const images = [
-        'http://localhost:5001/sample_images/antoine-blanchard_place-de-la-concorde.jpg',
-        'http://localhost:5001/sample_images/childe-hassam_white-church-at-newport-aka-church-in-a-new-england-village.jpg',
-        'http://localhost:5001/sample_images/ipolit-strambu_woman-with-umbrella.jpg'
-    ];
-
-    res.json({ images: images });
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log("MongoDB connected successfully");
+    // Start the server after successful connection
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}).catch((err) => {
+    console.log("Error connecting to MongoDB:", err);
+    process.exit(1);  // Exit process if MongoDB connection fails
 });
 
-// Art Search - Story generation
-app.post('/api/generate-story', (req, res) => {
-    const imageUrl = req.body.imageUrl;
-
-    const sampleText = ` You selected the image at ${imageUrl}.`;
-    const responseText = sampleText;
-
-    res.json({ text: responseText });
-});
-
-// Story generation - Image selection
-app.post('/api/select-images', (req, res) => {
-    const story = req.body.story;
-
-    // Hardcoded image URLs
-    const images = [
-        'http://localhost:5001/sample_images/antoine-blanchard_place-de-la-concorde.jpg',
-        'http://localhost:5001/sample_images/childe-hassam_white-church-at-newport-aka-church-in-a-new-england-village.jpg',
-        'http://localhost:5001/sample_images/ipolit-strambu_woman-with-umbrella.jpg'
-    ];
-
-    res.json({ images: images });
-});
-
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});

@@ -7,12 +7,11 @@ const Navbar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    // Check if user is logged in from localStorage
+    // Check if user is logged in from localStorage on mount
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token'); // Check if token exists
         if (token) {
-            console.log("HIIIII");
-            setIsLoggedIn(true);
+            setIsLoggedIn(true); // Set user as logged in
         }
     }, []);
 
@@ -21,8 +20,8 @@ const Navbar = () => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        setIsLoggedIn(false); 
+        localStorage.removeItem('token'); // Remove token from localStorage
+        setIsLoggedIn(false); // Update the state to logged out
     };
 
     return (

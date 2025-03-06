@@ -1,42 +1,46 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import './Login.css';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
-        event.preventDefault(); // Prevent page reload
-
+        event.preventDefault(); // Prevent default form submission behavior
+    
         try {
             const response = await fetch('http://localhost:5001/api/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({ username, password }),
             });
-
-            const responseData = await response.json();
-
+    
             if (response.ok) {
+                // Login successful
+                const responseData = await response.json();
                 console.log('Login successful:', responseData);
-
-                // Store token in localStorage (or sessionStorage)
+    
+                // Store the token in localStorage
                 localStorage.setItem('token', responseData.token);
                 localStorage.setItem('user', JSON.stringify(responseData.user));
-
-                // Redirect user to the home page (or dashboard)
-                navigate('/');
+    
+                window.location.href = '/';
             } else {
-                setError(responseData.message || 'Invalid username or password');
+                // Login failed
+                const errorData = await response.json();
+                console.error('Login failed:', errorData);
+                setError('Invalid username or password');
             }
         } catch (error) {
             console.error('Error during login:', error);
             setError('Something went wrong. Please try again later.');
         }
     };
+    
 
     return (
         <div className="box">

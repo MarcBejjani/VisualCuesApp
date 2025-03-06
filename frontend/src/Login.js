@@ -1,34 +1,36 @@
 import React, { useState } from 'react';
-import { Link } from "react-router-dom";
-import './Login.css'
+import { Link, useNavigate } from "react-router-dom";
+import './Login.css';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
-        event.preventDefault(); // Prevent default form submission behavior
+        event.preventDefault(); // Prevent page reload
 
         try {
             const response = await fetch('http://localhost:5001/api/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
 
+            const responseData = await response.json();
+
             if (response.ok) {
-                // Login successful
-                const responseData = await response.json();
                 console.log('Login successful:', responseData);
-                // You can store a token or user data here, and redirect to another page if needed
+
+                // Store token in localStorage (or sessionStorage)
+                localStorage.setItem('token', responseData.token);
+                localStorage.setItem('user', JSON.stringify(responseData.user));
+
+                // Redirect user to the home page (or dashboard)
+                navigate('/');
             } else {
-                // Login failed
-                const errorData = await response.json();
-                console.error('Login failed:', errorData);
-                setError('Invalid username or password');
+                setError(responseData.message || 'Invalid username or password');
             }
         } catch (error) {
             console.error('Error during login:', error);
@@ -45,6 +47,7 @@ const Login = () => {
                     <input
                         type="text"
                         id="username"
+                        name="username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required

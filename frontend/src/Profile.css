@@ -23,20 +23,44 @@
     background-color: #e0e0e0;
 }
 
-.story-box.expanded {
-    min-width: 400px; /* Expand width */
-    white-space: normal; /* Allow wrapping */
-    overflow: visible; /* Allow content to expand */
-    text-overflow: clip; /* Remove ellipsis */
-}
-
 .story-box p {
     margin: 0; /* Remove default paragraph margins */
     word-wrap: break-word; /* Break long words */
 }
 
-/* Optional: Style for expanded story text */
-.story-box.expanded p {
-    white-space: normal;
-    word-wrap: break-word; /* Prevent long words from breaking layout */
+/* Modal */
+.modal-history {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's on top */
+}
+
+.modal-history-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 80%; /* Adjust as needed */
+    max-height: 80%;
+    overflow-y: auto; /* Allow scrolling if content is too long */
+    position: relative; /* For close button positioning */
+}
+
+.history-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-history-image {
+    max-width: 50%;
+    height: auto;
 }

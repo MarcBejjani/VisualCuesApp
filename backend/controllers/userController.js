@@ -91,14 +91,14 @@ exports.getProfile = async (req, res) => {
     }
 };
 
-exports.saveSearch = async (req, res) => {
+exports.saveArtSearch = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        user.savedSearches.push({
+        user.savedArtSearches.push({
             text: req.body.storyText,   // The search query
             dateAdded: new Date()  // Timestamp
         });
@@ -110,7 +110,7 @@ exports.saveSearch = async (req, res) => {
     }
 };
 
-exports.retrieveSearches = async (req, res) => {
+exports.retrieveArtSearches = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
 
@@ -118,9 +118,44 @@ exports.retrieveSearches = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        res.json({ savedSearches: user.savedSearches || [] });
+        res.json({ savedArtSearches: user.savedArtSearches, savedStoryGenerations: user.savedStoryGenerations || [] });
     } catch (error) {
         console.error("Error retrieving saved searches:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+exports.saveStoryGeneration = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.savedStoryGenerations.push({
+            text: req.body.storyText,
+            image: req.body.imageUrl,
+            dateAdded: new Date()  // Timestamp
+        });
+
+        await user.save();
+        res.status(200).json({ message: 'Search saved successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+exports.retrieveStoryGenerations = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json({ savedStoryGenerations: user.savedStoryGenerations || [] });
+    } catch (error) {
+        console.error("Error retrieving saved story generations:", error);
         res.status(500).json({ message: "Server error" });
     }
 };

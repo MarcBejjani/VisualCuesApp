@@ -9,8 +9,10 @@ router.post('/api/login', userController.login);
 
 // Protected routes (require authentication)
 router.get('/api/profile', authenticateToken, userController.getProfile);
-router.post('/api/save-story', authenticateToken, userController.saveSearch);
-router.get('/api/retrieve-searches', authenticateToken, userController.retrieveSearches);
+router.post('/api/save-story', authenticateToken, userController.saveArtSearch);
+router.get('/api/retrieve-searches', authenticateToken, userController.retrieveArtSearches);
+router.post('/api/save-generation', authenticateToken, userController.saveStoryGeneration);
+router.post('/api/retrieve-generations', authenticateToken, userController.retrieveStoryGenerations);
 
 module.exports = router;
     

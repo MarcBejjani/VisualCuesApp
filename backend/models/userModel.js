@@ -15,9 +15,25 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    savedSearches: [
+    savedArtSearches: [
         {
             text: String,
+            dateAdded: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ],
+    savedStoryGenerations: [
+        {
+            text: {
+                type: String,
+                required: true
+            },
+            image: {
+                type: String,
+                required: true
+            },
             dateAdded: {
                 type: Date,
                 default: Date.now

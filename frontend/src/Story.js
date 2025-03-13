@@ -9,6 +9,8 @@ const Story = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
 
+    const [saveMessage, setSaveMessage] = useState('');
+
 
     const handleSubmit = () => {
         setImages([]);
@@ -46,6 +48,41 @@ const Story = () => {
 
     const closeModal = () => {
         setModalVisible(false);
+        setSaveMessage('');
+    };
+
+    const handleSaveClick = () => {
+        const token = localStorage.getItem('token'); // Check if user is logged in
+
+        if (!token) {
+            setSaveMessage('Please log in to save the story to your account.');
+            return;
+        }
+
+        fetch('http://localhost:5001/api/save-generation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`, // Send the token for authentication
+            },
+            body: JSON.stringify({
+                storyText: storyText,
+                imageUrl: selectedImage.url,
+            }),
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            setSaveMessage('Story saved successfully!');
+        })
+        .catch((error) => {
+            console.error('There was a problem saving the story:', error);
+            setSaveMessage('Failed to save the story. Please try again.');
+        });
     };
 
     return (
@@ -99,6 +136,8 @@ const Story = () => {
                         <img src={selectedImage.url} alt={selectedImage.name} className="modal-image" />
                         <div className="modal-info">
                             <span className="image-name">{selectedImage.name}</span>
+                            <button className="choose-button" onClick={handleSaveClick}>Save to History</button>
+                            {saveMessage && <p>{saveMessage}</p>}
                         </div>
                     </div>
                 </div>

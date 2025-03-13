@@ -8,6 +8,7 @@ import Story from './Story';
 import Search from './Search';
 import SignUp from './SignUp';
 import Login from './Login';
+import Profile from './Profile';
 import './App.css';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
                     <Route path="/artsearch" element={<Search />} />
                     <Route path="/signup" element={<SignUp />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/profile" element={<Profile />} />
                 </Routes>
             </div>
             <Footer />

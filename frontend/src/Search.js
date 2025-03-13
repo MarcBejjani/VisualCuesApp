@@ -3,14 +3,13 @@ import './Search.css';
 
 const Search = () => {
     const [storyText, setStoryText] = useState('');
-
     const [images, setImages] = useState([]);
-
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
-
     const [responseText, setResponseText] = useState(null);
+    const [saveMessage, setSaveMessage] = useState('');
 
+    // Handle form submission to fetch images
     const handleSubmit = () => {
         setResponseText(null);
         setImages([]);
@@ -41,6 +40,7 @@ const Search = () => {
         });
     };
 
+    // Handle image selection
     const handleImageClick = (image) => {
         setSelectedImage(image);
         setModalVisible(true);
@@ -48,9 +48,9 @@ const Search = () => {
 
     const closeModal = () => {
         setModalVisible(false);
-        // setSelectedImage(null);
     };
 
+    // Handle story generation
     const handleChooseClick = () => {
         fetch('http://localhost:5001/api/generate-story', {
             method: "POST",
@@ -63,7 +63,7 @@ const Search = () => {
         })
         .then((response) => {
             if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
             return response.json();
         })
@@ -76,6 +76,7 @@ const Search = () => {
         });
     };
 
+    // Copy generated story text to clipboard
     const copyToClipboard = () => {
         navigator.clipboard.writeText(responseText)
             .then(() => {
@@ -86,8 +87,44 @@ const Search = () => {
             });
     }
 
+    // Regenerate the story
     const handleRegenerateClick = () => {
         handleChooseClick();
+    };
+
+    // Handle saving the story to the user's account
+    const handleSaveClick = () => {
+        const token = localStorage.getItem('token'); // Check if user is logged in
+
+        if (!token) {
+            setSaveMessage('Please log in to save the story to your account.');
+            return;
+        }
+
+        // If user is logged in, send request to save the story
+        fetch('http://localhost:5001/api/save-story', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`, // Send the token for authentication
+            },
+            body: JSON.stringify({
+                storyText: responseText,
+            }),
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            setSaveMessage('Story saved successfully!');
+        })
+        .catch((error) => {
+            console.error('There was a problem saving the story:', error);
+            setSaveMessage('Failed to save the story. Please try again.');
+        });
     };
 
     return (
@@ -156,7 +193,9 @@ const Search = () => {
                     <div className="buttons-container">
                         <button className="submit-button" onClick={handleRegenerateClick}>Regenerate Story</button>
                         <button className="submit-button" onClick={copyToClipboard}>Copy Text</button>
+                        <button className="submit-button" onClick={handleSaveClick}>Save to Account</button>
                     </div>
+                    {saveMessage && <p>{saveMessage}</p>}
                 </div>
             )}
         </div>

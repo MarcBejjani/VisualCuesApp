@@ -1,0 +1,42 @@
+.story-list {
+    display: flex;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent wrapping */
+    padding: 10px 0;
+}
+
+.story-box {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-right: 10px;
+    min-width: 200px; /* Adjust as needed */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    overflow: hidden; /* Prevent content from overflowing */
+    text-overflow: ellipsis; /* Add ellipsis for long text */
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.story-box:hover {
+    background-color: #e0e0e0;
+}
+
+.story-box.expanded {
+    min-width: 400px; /* Expand width */
+    white-space: normal; /* Allow wrapping */
+    overflow: visible; /* Allow content to expand */
+    text-overflow: clip; /* Remove ellipsis */
+}
+
+.story-box p {
+    margin: 0; /* Remove default paragraph margins */
+    word-wrap: break-word; /* Break long words */
+}
+
+/* Optional: Style for expanded story text */
+.story-box.expanded p {
+    white-space: normal;
+    word-wrap: break-word; /* Prevent long words from breaking layout */
+}

@@ -69,12 +69,59 @@ exports.login = async (req, res) => {
             user: {
                 username: user.username,
                 email: user.email,
+                savedSearches: user.savedSearches,
                 _id: user._id,
             },
         });
     } catch (error) {
         console.error('Error logging in:', error);
         return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getProfile = async (req, res) => {
+    try {
+        const user = req.user;
+        res.json({
+            username: user.username,
+            savedSearches: user.savedSearches || [],
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.saveSearch = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.savedSearches.push({
+            text: req.body.storyText,   // The search query
+            dateAdded: new Date()  // Timestamp
+        });
+
+        await user.save();
+        res.status(200).json({ message: 'Search saved successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+exports.retrieveSearches = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json({ savedSearches: user.savedSearches || [] });
+    } catch (error) {
+        console.error("Error retrieving saved searches:", error);
+        res.status(500).json({ message: "Server error" });
     }
 };
 

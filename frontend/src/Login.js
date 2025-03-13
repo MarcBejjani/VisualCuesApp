@@ -28,7 +28,7 @@ const Login = () => {
                 localStorage.setItem('token', responseData.token);
                 localStorage.setItem('user', JSON.stringify(responseData.user));
     
-                window.location.href = '/';
+                window.location.href = '/profile';
             } else {
                 // Login failed
                 const errorData = await response.json();

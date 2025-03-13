@@ -1,3 +1,6 @@
+const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
+
 // Art Search - Image selection
 exports.searchImages = (req, res) => {
     const story = req.body.story;

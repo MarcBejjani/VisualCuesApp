@@ -12,7 +12,6 @@ router.get('/api/profile', authenticateToken, userController.getProfile);
 router.post('/api/save-story', authenticateToken, userController.saveArtSearch);
 router.get('/api/retrieve-searches', authenticateToken, userController.retrieveArtSearches);
 router.post('/api/save-generation', authenticateToken, userController.saveStoryGeneration);
-router.post('/api/retrieve-generations', authenticateToken, userController.retrieveStoryGenerations);
 
 module.exports = router;
     

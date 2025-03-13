@@ -105,7 +105,7 @@ const Profile = () => {
                         <h3><strong>Date:</strong> {new Date(expandedStory.dateAdded).toLocaleString()}</h3>
                         <p>{expandedStory.text}</p>
                         {expandedStory.image && (
-                            <img src={expandedStory.image} alt="Story Image" className="modal-history-image" />
+                            <img src={expandedStory.image} alt="Story" className="modal-history-image" />
                         )}
                     </div>
                 </div>

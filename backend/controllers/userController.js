@@ -145,18 +145,3 @@ exports.saveStoryGeneration = async (req, res) => {
     }
 };
 
-exports.retrieveStoryGenerations = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        res.json({ savedStoryGenerations: user.savedStoryGenerations || [] });
-    } catch (error) {
-        console.error("Error retrieving saved story generations:", error);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-

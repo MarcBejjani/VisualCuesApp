@@ -25,31 +25,27 @@ def get_clip_embedding(model, tokenizer, text):
 
 @router.post("/search-images")
 async def search_images(body: dict, db=Depends(get_db)):
-    # images = [
-    #     "http://localhost:5001/static/sample_images/antoine-blanchard_place-de-la-concorde.jpg",
-    #     "http://localhost:5001/static/sample_images/childe-hassam_white-church-at-newport-aka-church-in-a-new-england-village.jpg",
-    #     "http://localhost:5001/static/sample_images/ipolit-strambu_woman-with-umbrella.jpg",
-    # ]
-
     model, _, _ = open_clip.create_model_and_transforms(
-        "ViT-L-14-quickgelu", pretrained="openai"
+    "ViT-L-14-quickgelu", pretrained="openai"
     )
     tokenizer = open_clip.get_tokenizer("ViT-L-14-quickgelu")
 
-    indexImages = faiss.read_index("../embeddingsCLIP/index/faiss_index_images.bin")
+    indexImages = faiss.read_index("./embeddingsCLIP/index/faiss_index_images.bin")
 
-    with open("../metadata/metadata_images.pkl", "rb") as f:
+    with open("./embeddingsCLIP/metadata/metadata_images.pkl", "rb") as f:
         metadataImages = pickle.load(f)
 
-    query_embedding = get_clip_embedding(model, tokenizer, body["Story"])
+    query_embedding = get_clip_embedding(model, tokenizer, body["story"])
     k = 3
 
-    distancesImages, indicesImages = indexImages.search(query_embedding, k)
+    _, indicesImages = indexImages.search(query_embedding, k)
     listArt = []
     print("\n--- Image results ---")
     for i, idx in enumerate(indicesImages[0]):
         if idx < len(metadataImages):
-            listArt.append(metadataImages[idx])
+            image_name = metadataImages[idx][:-4]
+            print(image_name)
+            listArt.append(f"http://localhost:5001/static/archive/{image_name}.jpg")
 
     return {"images": listArt}
 
@@ -61,10 +57,27 @@ async def generate_story(image_url: dict, db=Depends(get_db)):
 
 
 @router.post("/select-images")
-async def select_images(story: dict, db=Depends(get_db)):
-    images = [
-        "http://localhost:5001/static/sample_images/antoine-blanchard_place-de-la-concorde.jpg",
-        "http://localhost:5001/static/sample_images/childe-hassam_white-church-at-newport-aka-church-in-a-new-england-village.jpg",
-        "http://localhost:5001/static/sample_images/ipolit-strambu_woman-with-umbrella.jpg",
-    ]
-    return {"images": images}
+async def select_images(body: dict, db=Depends(get_db)):
+    model, _, _ = open_clip.create_model_and_transforms(
+        "ViT-L-14-quickgelu", pretrained="openai"
+    )
+    tokenizer = open_clip.get_tokenizer("ViT-L-14-quickgelu")
+
+    indexImages = faiss.read_index("./embeddingsCLIP/index/faiss_index_images.bin")
+
+    with open("./embeddingsCLIP/metadata/metadata_images.pkl", "rb") as f:
+        metadataImages = pickle.load(f)
+
+    query_embedding = get_clip_embedding(model, tokenizer, body["story"])
+    k = 3
+
+    _, indicesImages = indexImages.search(query_embedding, k)
+    listArt = []
+    print("\n--- Image results ---")
+    for i, idx in enumerate(indicesImages[0]):
+        if idx < len(metadataImages):
+            image_name = metadataImages[idx][:-4]
+            print(image_name)
+            listArt.append(f"http://localhost:5001/static/archive/{image_name}.jpg")
+
+    return {"images": listArt}

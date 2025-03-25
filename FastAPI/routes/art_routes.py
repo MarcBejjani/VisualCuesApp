@@ -36,12 +36,12 @@ async def search_images(body: dict, db=Depends(get_db)):
     )
     tokenizer = open_clip.get_tokenizer("ViT-L-14-quickgelu")
 
-    indexImages = faiss.read_index("../embeddingsCLIP/index/faiss_index_images.bin")
+    indexImages = faiss.read_index("./embeddingsCLIP/index/faiss_index_images.bin")
 
-    with open("../metadata/metadata_images.pkl", "rb") as f:
+    with open("./embeddingsCLIP/metadata/metadata_images.pkl", "rb") as f:
         metadataImages = pickle.load(f)
 
-    query_embedding = get_clip_embedding(model, tokenizer, body["Story"])
+    query_embedding = get_clip_embedding(model, tokenizer, body["story"])
     k = 3
 
     distancesImages, indicesImages = indexImages.search(query_embedding, k)

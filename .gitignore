@@ -3,3 +3,4 @@ node_modules
 FastAPI/new_venv
 FastAPI/__pycache__
 FastAPI/Archive
+FastAPI/venv

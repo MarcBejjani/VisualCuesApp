@@ -1,17 +1,25 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
 from routes import get_db
 import open_clip
 import faiss
 import pickle
 import torch
 import numpy as np
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoProcessor, AutoModelForCausalLM
+from PIL import Image
+import requests
+from io import BytesIO
+import logging
+import os
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
-model_name = "meta-llama/Llama-3.2-3b"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+MODEL_NAME = "Qwen/Qwen-VL-Chat"
+processor = AutoProcessor.from_pretrained(MODEL_NAME, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, trust_remote_code=True).to("cuda" if torch.cuda.is_available() else "cpu")
 
 # ✅ Load the model **once** at startup
 print("Loading CLIP model...")
@@ -52,15 +60,33 @@ async def search_images(body: dict, db=Depends(get_db)):
     return {"images": listArt}
 
 @router.post("/generate-story")
-async def generate_story(image_url: dict, db=Depends(get_db)):
-    prompt = f"Write a short, imaginative story inspired by the image at {image_url['imageUrl']}."
+async def generate_story(body: dict):
+    image_url = body.get("imageUrl")
+    logger.info(f"Received generate-story request with imageUrl: {image_url}")
 
-    # Tokenize the prompt
-    inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
+    if not image_url:
+        raise HTTPException(status_code=400, detail="Missing imageUrl in request body")
+
+    # Extract local image path
+    local_path = image_url.replace("http://localhost:5001/", "./")
+
+    if not os.path.exists(local_path):
+        raise HTTPException(status_code=404, detail="Image not found on the server")
+
+    # Load the image
+    image = Image.open(local_path).convert("RGB")
+
+    # Generate story prompt
+    prompt = "Imagine a magical story based on this image. Describe the setting, characters, and an interesting event."
+
+    # Prepare input for the model
+    inputs = processor(images=image, text=prompt, return_tensors="pt").to("cuda" if torch.cuda.is_available() else "cpu")
 
     # Generate the story
-    outputs = model.generate(**inputs, max_length=500)
-    story = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    with torch.no_grad():
+        outputs = model.generate(**inputs, max_length=200)
+
+    story = processor.batch_decode(outputs, skip_special_tokens=True)[0]
 
     return {"text": story}
 

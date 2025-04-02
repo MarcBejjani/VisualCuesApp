@@ -6,6 +6,7 @@ const Search = () => {
     const [images, setImages] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [loading, setLoading] = useState(false); 
     const [responseText, setResponseText] = useState(null);
     const [saveMessage, setSaveMessage] = useState('');
 
@@ -52,6 +53,7 @@ const Search = () => {
 
     // Handle story generation
     const handleChooseClick = () => {
+        setLoading(true);
         fetch('http://localhost:5001/api/generate-story', {
             method: "POST",
             headers: {
@@ -73,6 +75,9 @@ const Search = () => {
         })
         .catch((error) => {
             console.error("There was a problem with the fetch operation:", error);
+        })
+        .finally(() => {
+            setLoading(false);
         });
     };
 
@@ -179,7 +184,13 @@ const Search = () => {
                         <img src={selectedImage.url} alt={selectedImage.name} className="modal-image" />
                         <div className="modal-info">
                             <span className="image-name">{selectedImage.name}</span>
-                            <button className="choose-button" onClick={handleChooseClick}>Choose</button>
+                            <button
+                                className="choose-button"
+                                onClick={handleChooseClick}
+                                disabled={loading}
+                            >
+                                {loading ? 'Generating Story...' : 'Choose'}
+                            </button>
                         </div>
                     </div>
                 </div>

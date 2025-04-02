@@ -1,7 +1,7 @@
 backend/node_modules
 node_modules
 FastAPI/new_venv
-FastAPI/__pycache__
+FastAPI/**/__pycache__
 FastAPI/Archive.zip
 FastAPI/static/archive
 FastAPI/archive

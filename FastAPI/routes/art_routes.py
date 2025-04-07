@@ -17,22 +17,22 @@ logger = logging.getLogger(__name__)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-MODEL_NAME = "Qwen/Qwen-VL-Chat"
-processor = AutoProcessor.from_pretrained(MODEL_NAME, trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, trust_remote_code=True).to("cuda" if torch.cuda.is_available() else "cpu")
+# MODEL_NAME = "Qwen/Qwen-VL-Chat"
+# processor = AutoProcessor.from_pretrained(MODEL_NAME, trust_remote_code=True)
+# model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, trust_remote_code=True).to("cuda" if torch.cuda.is_available() else "cpu")
 
 # ✅ Load the model **once** at startup
-print("Loading CLIP model...")
-clip_model, _, _ = open_clip.create_model_and_transforms("ViT-L-14-quickgelu", pretrained="openai")
-clip_tokenizer = open_clip.get_tokenizer("ViT-L-14-quickgelu")
-print("CLIP model loaded successfully!")
+# print("Loading CLIP model...")
+# clip_model, _, _ = open_clip.create_model_and_transforms("ViT-L-14-quickgelu", pretrained="openai")
+# clip_tokenizer = open_clip.get_tokenizer("ViT-L-14-quickgelu")
+# print("CLIP model loaded successfully!")
 
-# ✅ Load FAISS index and metadata once
-print("Loading FAISS index and metadata...")
-indexImages = faiss.read_index("./embeddingsCLIP/index/faiss_index_images.bin")
-with open("./embeddingsCLIP/metadata/metadata_images.pkl", "rb") as f:
-    metadataImages = pickle.load(f)
-print("FAISS index and metadata loaded successfully!")
+# # ✅ Load FAISS index and metadata once
+# print("Loading FAISS index and metadata...")
+# indexImages = faiss.read_index("./embeddingsCLIP/index/faiss_index_images.bin")
+# with open("./embeddingsCLIP/metadata/metadata_images.pkl", "rb") as f:
+#     metadataImages = pickle.load(f)
+# print("FAISS index and metadata loaded successfully!")
 
 def get_clip_embedding(text):
     with torch.no_grad():

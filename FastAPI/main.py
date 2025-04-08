@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import os
 from routes import art_routes, user_routes
-import database  # import the database file
+import database
 import asyncio
 
 load_dotenv()
@@ -14,13 +14,14 @@ app = FastAPI()
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust as needed for production
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="/app/static"), name="static")
 
 # Include routers
 app.include_router(art_routes.router, prefix="/api", tags=["Art"])

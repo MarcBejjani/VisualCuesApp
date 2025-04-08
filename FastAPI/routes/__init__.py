@@ -1,5 +1,5 @@
 from fastapi import Depends
-import database #import the database file
+import database
 
 def get_db():
     return database.db

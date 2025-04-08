@@ -97,9 +97,8 @@ const Search = () => {
         handleChooseClick();
     };
 
-    // Handle saving the story to the user's account
     const handleSaveClick = () => {
-        const token = localStorage.getItem('token'); // Check if user is logged in
+        const token = localStorage.getItem('token');
 
         if (!token) {
             setSaveMessage('Please log in to save the story to your account.');
@@ -111,7 +110,7 @@ const Search = () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`, // Send the token for authentication
+                'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({
                 storyText: responseText,
@@ -166,7 +165,7 @@ const Search = () => {
                                     src={image.url}
                                     alt={`Generated Image ${index + 1}`}
                                     className="generated-image"
-                                    onClick={() => handleImageClick(image)} // Add onClick handler
+                                    onClick={() => handleImageClick(image)}
                                 />
                                 <span className="image-name">{image.name}</span>
                             </div>

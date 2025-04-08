@@ -32,7 +32,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 
-async def get_current_user(request: Request, db = Depends(get_db)) -> str: #return a string
+async def get_current_user(request: Request, db = Depends(get_db)) -> str:
     token = request.headers.get("Authorization").split(" ")[1] if request.headers.get("Authorization") else None
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No token provided")
@@ -45,14 +45,14 @@ async def get_current_user(request: Request, db = Depends(get_db)) -> str: #retu
 
         return user["_id"]
     except Exception as e:
-        print(f"Token verification failed: {e}")  # Debug
+        print(f"Token verification failed: {e}")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token")
 
 @router.post("/signup", response_model=UserInDB)
 async def signup(user: User, db = Depends(get_db)):
-    print(f"Attempting signup for email: {user.email}") #debug
+    print(f"Attempting signup for email: {user.email}")
     existing_user = await db.users.find_one({"email": user.email})
-    print(f"Find one result: {existing_user}") #debug
+    print(f"Find one result: {existing_user}")
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
     hashed_password = get_password_hash(user.password)
@@ -64,7 +64,7 @@ async def signup(user: User, db = Depends(get_db)):
 
 @router.post("/login", response_model=Dict)
 async def login(user: UserLogin, db = Depends(get_db)):
-    db_user = await db.users.find_one({"username": user.username}) #add await here
+    db_user = await db.users.find_one({"username": user.username})
     if not db_user or not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=400, detail="Invalid username or password")
     access_token = create_access_token(data={"userId": str(db_user["_id"])})
@@ -84,7 +84,7 @@ async def save_art_search(story_text: dict, current_user: str = Depends(get_curr
 async def save_story_generation(story_data: dict, current_user: str = Depends(get_current_user), db = Depends(get_db)):
     try:
         db.users.update_one(
-            {"_id": current_user}, #use the string
+            {"_id": current_user},
             {
                 "$push": {
                     "savedStoryGenerations": {

@@ -4,7 +4,7 @@ FROM python:3.10
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy only requirements first (better for caching)
+# Copy only requirements first
 COPY requirements.txt .
 
 # Install dependencies

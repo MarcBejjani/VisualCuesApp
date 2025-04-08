@@ -8,7 +8,7 @@ const SignUp = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();  // useNavigate hook for redirection
+    const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -27,8 +27,7 @@ const SignUp = () => {
 
             if (response.ok) {
                 console.log(response.message);
-                // Use navigate to redirect
-                navigate('/login');  // Redirect to the login page (or another page)
+                navigate('/login');
             } else {
                 const errorData = await response.json();
                 setError(errorData.message || 'Signup failed. Please try again.');

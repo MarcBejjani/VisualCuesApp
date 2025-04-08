@@ -119,7 +119,7 @@ const Story = () => {
                                     src={image.url}
                                     alt={`Generated art piece ${index + 1}`}
                                     className="generated-image"
-                                    onClick={() => handleImageClick(image)} // Add onClick handler
+                                    onClick={() => handleImageClick(image)}
                                 />
                                 <span className="image-name">{image.name}</span>
                             </div>

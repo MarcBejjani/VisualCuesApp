@@ -17,22 +17,22 @@ logger = logging.getLogger(__name__)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# MODEL_NAME = "Qwen/Qwen-VL-Chat"
-# processor = AutoProcessor.from_pretrained(MODEL_NAME, trust_remote_code=True)
-# model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, trust_remote_code=True).to("cuda" if torch.cuda.is_available() else "cpu")
+MODEL_NAME = "Qwen/Qwen-VL-Chat"
+processor = AutoProcessor.from_pretrained(MODEL_NAME, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, trust_remote_code=True).to("cuda" if torch.cuda.is_available() else "cpu")
 
-# ✅ Load the model **once** at startup
-# print("Loading CLIP model...")
-# clip_model, _, _ = open_clip.create_model_and_transforms("ViT-L-14-quickgelu", pretrained="openai")
-# clip_tokenizer = open_clip.get_tokenizer("ViT-L-14-quickgelu")
-# print("CLIP model loaded successfully!")
+# Load the model **once** at startup
+print("Loading CLIP model...")
+clip_model, _, _ = open_clip.create_model_and_transforms("ViT-L-14-quickgelu", pretrained="openai")
+clip_tokenizer = open_clip.get_tokenizer("ViT-L-14-quickgelu")
+print("CLIP model loaded successfully!")
 
-# # ✅ Load FAISS index and metadata once
-# print("Loading FAISS index and metadata...")
-# indexImages = faiss.read_index("./embeddingsCLIP/index/faiss_index_images.bin")
-# with open("./embeddingsCLIP/metadata/metadata_images.pkl", "rb") as f:
-#     metadataImages = pickle.load(f)
-# print("FAISS index and metadata loaded successfully!")
+# Load FAISS index and metadata once
+print("Loading FAISS index and metadata...")
+indexImages = faiss.read_index("./embeddingsCLIP/index/faiss_index_images.bin")
+with open("./embeddingsCLIP/metadata/metadata_images.pkl", "rb") as f:
+    metadataImages = pickle.load(f)
+print("FAISS index and metadata loaded successfully!")
 
 def get_clip_embedding(text):
     with torch.no_grad():
@@ -87,8 +87,10 @@ async def generate_story(body: dict):
         outputs = model.generate(**inputs, max_length=200)
 
     story = processor.batch_decode(outputs, skip_special_tokens=True)[0]
+    story = story.replace("Imagine a magical story based on this image. Describe the setting, characters, and an interesting event. ", "")
 
     return {"text": story}
+
 
 @router.post("/select-images")
 async def select_images(body: dict, db=Depends(get_db)):

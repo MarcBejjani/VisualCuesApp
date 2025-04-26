@@ -7,13 +7,15 @@ const Profile = () => {
     const [savedStoryGenerations, setSavedStoryGenerations] = useState([]);
     const [expandedStory, setExpandedStory] = useState(null);
 
+    const API_URL = 'http://localhost:5001';
+
     useEffect(() => {
         const fetchUserProfile = async () => {
             const token = localStorage.getItem('token'); // Retrieve the authentication token
             if (!token) return;
 
             try {
-                const response = await fetch('http://localhost:5001/api/retrieve-searches', {
+                const response = await fetch(`${API_URL}/api/retrieve-searches`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

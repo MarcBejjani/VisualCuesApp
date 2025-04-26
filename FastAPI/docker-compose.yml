@@ -13,6 +13,10 @@ services:
       - ./static/archive:/app/static/archive
     networks:
       - app_network
+    # device_requests:
+    #   - driver: nvidia
+    #     count: all
+    #     capabilities: [gpu]
 
   mongo:
     image: mongo:7.0.5

@@ -137,3 +137,9 @@
 #generated-story p {
     text-align: left;
 }
+
+.input-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }

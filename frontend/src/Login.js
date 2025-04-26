@@ -7,11 +7,13 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
+    const API_URL = 'http://localhost:5001';
+
     const handleSubmit = async (event) => {
         event.preventDefault(); // Prevent default form submission behavior
     
         try {
-            const response = await fetch('http://localhost:5001/api/login', {
+            const response = await fetch(`${API_URL}/api/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

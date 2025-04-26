@@ -19,9 +19,9 @@
 
 .image-text {
     font-size: 18px;
-    /* No need for absolute positioning */
     margin-top: 10px; /* Add space between image and text */
     color: black; /* Set text color to black or any suitable color */
+    width: 150px;
 }
 
 .clickable-image {

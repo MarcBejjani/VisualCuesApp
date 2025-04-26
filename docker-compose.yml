@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:7.0.5
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app_network
+
+  backend:
+    build:
+      context: ./FastAPI
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongo
+    env_file:
+      - ./FastAPI/.env
+    volumes:
+      - ./FastAPI/static/archive:/app/static/archive
+    networks:
+      - app_network
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: http://backend:5001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  mongo_data:
+
+networks:
+  app_network:
+    driver: bridge

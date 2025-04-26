@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Search.css';
+import SpeechInput from './SpeechInput';
 
 const Search = () => {
     const [storyText, setStoryText] = useState('');
@@ -10,12 +11,14 @@ const Search = () => {
     const [responseText, setResponseText] = useState(null);
     const [saveMessage, setSaveMessage] = useState('');
 
+    const API_URL = 'http://localhost:5001';
+
     // Handle form submission to fetch images
     const handleSubmit = () => {
         setResponseText(null);
         setImages([]);
 
-        fetch('http://localhost:5001/api/search-images', {
+        fetch(`${API_URL}/api/search-images`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -54,7 +57,7 @@ const Search = () => {
     // Handle story generation
     const handleChooseClick = () => {
         setLoading(true);
-        fetch('http://localhost:5001/api/generate-story', {
+        fetch(`${API_URL}/api/generate-story`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -106,7 +109,7 @@ const Search = () => {
         }
 
         // If user is logged in, send request to save the story
-        fetch('http://localhost:5001/api/save-story', {
+        fetch(`${API_URL}/api/save-story`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -143,13 +146,16 @@ const Search = () => {
                 </p>
             </div>
             <div className="content-box">
-                <h1>Search</h1>
-                <textarea
+                <h1>Enter some keywords to Search for Art!</h1>
+                <div className="input-row">
+                    <textarea
                     className="search-textbox"
                     placeholder="Input some keywords here..."
                     value={storyText}
                     onChange={(e) => setStoryText(e.target.value)}
-                />
+                    />
+                    <SpeechInput onChange={setStoryText} initialValue={storyText} />
+                </div>
                 <button className="submit-button" onClick={handleSubmit}>Submit</button>
             </div>
             {images.length > 0 && (

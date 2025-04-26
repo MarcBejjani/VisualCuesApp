@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Story.css';
+import SpeechInput from './SpeechInput';
 
 const Story = () => {
     const [storyText, setStoryText] = useState('');
@@ -11,11 +12,12 @@ const Story = () => {
 
     const [saveMessage, setSaveMessage] = useState('');
 
+    const API_URL = 'http://localhost:5001';
 
     const handleSubmit = () => {
         setImages([]);
-
-        fetch('http://localhost:5001/api/select-images', {
+        
+        fetch(`${API_URL}/api/select-images`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -59,7 +61,7 @@ const Story = () => {
             return;
         }
 
-        fetch('http://localhost:5001/api/save-generation', {
+        fetch(`${API_URL}/api/save-generation`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -97,13 +99,16 @@ const Story = () => {
                 </p>
             </div>
             <div className="content-box">
-                <h1>Input</h1>
-                <textarea
-                    className="story-textbox"
-                    placeholder="Write your story here..."
+                <h1>Write your story below!</h1>
+                <div className="input-row">
+                    <textarea
+                    className="search-textbox"
+                    placeholder="Input some keywords here..."
                     value={storyText}
                     onChange={(e) => setStoryText(e.target.value)}
-                />
+                    />
+                    <SpeechInput onChange={setStoryText} initialValue={storyText} />
+                </div>
                 <button className="submit-button" onClick={handleSubmit}>Submit</button>
             </div>
             {images.length > 0 && (

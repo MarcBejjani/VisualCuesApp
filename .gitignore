@@ -6,3 +6,4 @@ FastAPI/Archive.zip
 FastAPI/static/archive
 FastAPI/archive
 FastAPI/venv
+.env

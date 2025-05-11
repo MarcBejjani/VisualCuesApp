@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './Story.css';
 import SpeechInput from './SpeechInput';
+import ReadAloudButton from './components/ReadAloudButton';
 
 const Story = () => {
+    const contentRef = useRef(null);
+
     const [storyText, setStoryText] = useState('');
 
     const [images, setImages] = useState([]);
@@ -89,7 +92,7 @@ const Story = () => {
 
     return (
         <div>
-            <div className="content-box">
+            <div className="content-box" ref={contentRef}>
                 <h1>Story Generation Instructions</h1>
                 <p>
                     The story generation tool allows you to input a story or a memory (or part of it).
@@ -97,6 +100,13 @@ const Story = () => {
                     <br></br>
                     Feel free to keep on adding details to the text if the art pieces help you!
                 </p>
+                <ReadAloudButton
+                    targetRef={contentRef}
+                    extraText={[
+                        "In the box below, you can enter text, or click a button to speak the words instead of typing.",
+                        "Finally, there is a submit button to click once you are done inputting the text."
+                    ]}
+                />
             </div>
             <div className="content-box">
                 <h1>Write your story below!</h1>

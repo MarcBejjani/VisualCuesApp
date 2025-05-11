@@ -1,10 +1,20 @@
-export function speak(text) {
-  if (!window.speechSynthesis) {
-    console.warn("Text-to-Speech not supported in this browser.");
-    return;
+export function speakWithPauses(textBlocks, pauseMs = 500) {
+  if (!window.speechSynthesis) return;
+
+  let i = 0;
+
+  function speakNext() {
+    if (i >= textBlocks.length) return;
+    const utterance = new SpeechSynthesisUtterance(textBlocks[i]);
+    utterance.onend = () => {
+      setTimeout(() => {
+        i++;
+        speakNext();
+      }, pauseMs);
+    };
+    window.speechSynthesis.speak(utterance);
   }
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  speechSynthesis.cancel(); // Cancel ongoing speech, if any
-  speechSynthesis.speak(utterance);
+  window.speechSynthesis.cancel();
+  speakNext();
 }

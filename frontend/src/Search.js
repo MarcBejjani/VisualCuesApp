@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './Search.css';
 import SpeechInput from './SpeechInput';
+import ReadAloudButton from './components/ReadAloudButton'
 
 const Search = () => {
+    const contentRef = useRef(null);
+
     const [storyText, setStoryText] = useState('');
     const [images, setImages] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
@@ -136,7 +139,7 @@ const Search = () => {
 
     return (
         <div>
-            <div className="content-box">
+            <div className="content-box" ref={contentRef}>
                 <h1>Art Search Instructions</h1>
                 <p>
                     The story generation tool allows you to search for art pieces by typing in some keywords.
@@ -144,6 +147,13 @@ const Search = () => {
                     <br></br>
                     Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.
                 </p>
+                <ReadAloudButton
+                    targetRef={contentRef}
+                    extraText={[
+                        "In the box below, you can enter text, or click a button to speak the words instead of typing.",
+                        "Finally, there is a submit button to click once you are done inputting the text."
+                    ]}
+                />
             </div>
             <div className="content-box">
                 <h1>Enter some keywords to Search for Art!</h1>

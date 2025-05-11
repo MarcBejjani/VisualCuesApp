@@ -1,27 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
 import storyImage from './images/storyImage.png'; //<a target="_blank" href="https://icons8.com/icon/42763/book">Book</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 import artImage from './images/artImage.png'; //<a target="_blank" href="https://icons8.com/icon/7695/search">Search</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+import ReadAloudButton from './components/ReadAloudButton';
 
 const Home = () => {
+    const contentRef = useRef(null);
+
     const [fontSize, setFontSize] = useState(() => {
         const rootFont = getComputedStyle(document.documentElement).getPropertyValue('--base-font-size');
         return parseInt(rootFont) || 20;
-      });
-    
-      useEffect(() => {
+    });
+
+    useEffect(() => {
         document.documentElement.style.setProperty('--base-font-size', `${fontSize}px`);
-      }, [fontSize]);
+    }, [fontSize]);
 
     return (
         <div>
-            <div className="content-box">
+            <div className="content-box" ref={contentRef}>
                 <h1>Welcome to our Visual Cues application!</h1>
                 <p>
                     This website allows you to interact with different AI models that can generate stories based on your input, or
                     suggest different paintings based on a search criteria.
-                    <br></br>
+                    <br />
                     To get started, please click on one of the two options down below!
                 </p>
                 <div className="images-container">
@@ -38,23 +41,31 @@ const Home = () => {
                         </div>
                     </Link>
                 </div>
+                <ReadAloudButton
+                    targetRef={contentRef}
+                    extraText={[
+                        "You can use the font slider to adjust the text size.",
+                        "Use the navigation buttons to explore the app."
+                    ]}
+                />
             </div>
+
             <div className="content-box">
-                    <label htmlFor="font-size-slider">
-                        Adjust Font Size: {fontSize}px
-                    </label>
-                    <input
-                        id="font-size-slider"
-                        type="range"
-                        min="14"
-                        max="32"
-                        value={fontSize}
-                        onChange={(e) => setFontSize(e.target.value)}
-                        style={{ width: '100%', margin: '1rem 0' }}
-                    />
-                    <p>
-                        This text will scale dynamically based on the font size you select. Try moving the slider!
-                    </p>
+                <label htmlFor="font-size-slider">
+                    Adjust Font Size: {fontSize}px
+                </label>
+                <input
+                    id="font-size-slider"
+                    type="range"
+                    min="14"
+                    max="32"
+                    value={fontSize}
+                    onChange={(e) => setFontSize(e.target.value)}
+                    style={{ width: '100%', margin: '1rem 0' }}
+                />
+                <p>
+                    This text will scale dynamically based on the font size you select. Try moving the slider!
+                </p>
             </div>
         </div>
     );

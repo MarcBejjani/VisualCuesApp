@@ -42,8 +42,8 @@ export default function SpeechInput({ onChange, initialValue = '' }) {
         style={{
           padding: '0.5rem 1rem',
           fontSize: '1rem',
-          backgroundColor: isListening ? '#ccc' : '#007BFF',
-          color: '#fff',
+          backgroundColor: isListening ? '#var(--button-hover-bg)' : 'var(--button-bg)',
+          color: 'var(--button-text)',
           border: 'none',
           borderRadius: '0.5rem',
           cursor: isListening ? 'default' : 'pointer',

@@ -1,6 +1,6 @@
 .tts-button {
-    background-color: #007bff; /* Blue background color */
-    color: white;
+    background-color: var(--button-bg); /* Blue background color */
+    color: var(--button-text);
     padding: 12px 20px;
     border: none;
     border-radius: 5px;
@@ -11,7 +11,7 @@
 }
 
 .tts-button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
+    background-color: var(--button-hover-bg); /* Darker blue on hover */
 }
 
 .tts-button.reading {

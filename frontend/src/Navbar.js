@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Navbar.css';
 import logo from './images/logepl.jpg';
+import { useTheme } from './components/ThemeContext';
 
 const Navbar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    const { toggleTheme } = useTheme();
 
     // Check if user is logged in from localStorage on mount
     useEffect(() => {
@@ -29,6 +32,7 @@ const Navbar = () => {
             <Link to="/">
                 <img src={logo} alt="Logo" className="logo" />
             </Link>
+            <button id='theme-button' onClick={toggleTheme}>Toggle Theme</button>
             <div className="center-text">
                 Visual Cues
             </div>

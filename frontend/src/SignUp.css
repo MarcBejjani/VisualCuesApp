@@ -2,7 +2,7 @@
     width: 30%; /* Adjust width as needed */
     margin: 50px auto;
     padding: 30px;
-    background-color: #fff;
+    background-color: var(--container-color);
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     font-family: sans-serif;
@@ -34,7 +34,7 @@
 }
 
 .box button[type="submit"] {
-    background-color: #007bff;
+    background-color: var(--button-bg);
     color: white;
     padding: 10px 20px;
     border: none;

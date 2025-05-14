@@ -11,15 +11,16 @@ import requests
 from io import BytesIO
 import logging
 import os
+import re
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-MODEL_NAME = "Qwen/Qwen-VL-Chat"
-processor = AutoProcessor.from_pretrained(MODEL_NAME, trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, trust_remote_code=True).to("cuda" if torch.cuda.is_available() else "cpu")
+# MODEL_NAME = "Qwen/Qwen-VL-Chat"
+# processor = AutoProcessor.from_pretrained(MODEL_NAME, trust_remote_code=True)
+# model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, trust_remote_code=True).to("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load the model **once** at startup
 print("Loading CLIP model...")
@@ -92,6 +93,49 @@ async def generate_story(body: dict):
     return {"text": story}
 
 
+@router.post("/generate-stories-for-images")
+async def generate_stories_for_images(body: dict):
+    imageUrls = body.get("imageUrls")
+    if not imageUrls:
+        raise HTTPException(status_code=400, detail="Missing imageUrls in request body")
+    
+    generated_stories = "blablabla"
+
+    # generated_stories = []
+    # for imageUrl in imageUrls:
+    #     logger.info(f"Generating story for imageUrl: {imageUrl}")
+    #     try:
+    #         # Extract local image path
+    #         local_path = imageUrl.replace("http://localhost:5001/", "./")
+    #         if not os.path.exists(local_path):
+    #             logger.error(f"Image not found: {local_path}")
+    #             generated_stories.append(f"Error: Image not found for {imageUrl}")
+    #             continue
+
+    #         # Load the image
+    #         image = Image.open(local_path).convert("RGB")
+
+    #         # Generate story prompt
+    #         prompt = "Imagine a magical story based on this image. Describe the setting, characters, and an interesting event."
+
+    #         # Prepare input for the model
+    #         inputs = processor(images=image, text=prompt, return_tensors="pt").to(device)
+
+    #         # Generate the story
+    #         with torch.no_grad():
+    #             outputs = model.generate(**inputs, max_length=200)
+
+    #         story = processor.batch_decode(outputs, skip_special_tokens=True)[0]
+    #         story = story.replace("Imagine a magical story based on this image. Describe the setting, characters, and an interesting event. ", "")
+    #         generated_stories.append(story)
+
+    #     except Exception as e:
+    #         logger.error(f"Error generating story for {imageUrl}: {e}")
+    #         generated_stories.append(f"Error generating story for {imageUrl}")
+
+    return {"story": generated_stories}
+
+
 @router.post("/select-images")
 async def select_images(body: dict, db=Depends(get_db)):
     query_embedding = get_clip_embedding(body["story"])
@@ -107,3 +151,26 @@ async def select_images(body: dict, db=Depends(get_db)):
             listArt.append(f"http://localhost:5001/static/archive/{image_name}.jpg")
 
     return {"images": listArt}
+
+@router.post("/select-images-per-section")
+async def select_images_per_section(body: dict, db=Depends(get_db)):
+    story = body["story"]
+    # Simple splitting by sentence ends (., !, ?)
+    sections = [s.strip() for s in re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!)\s', story) if s.strip()]
+    results = []
+
+    for section in sections:
+        query_embedding = get_clip_embedding(section)
+        k = 3
+        _, indicesImages = indexImages.search(query_embedding, k)
+
+        section_images = []
+        print(f"\n--- Image results for section: '{section}' ---")
+        for i, idx in enumerate(indicesImages[0]):
+            if idx < len(metadataImages):
+                image_name = metadataImages[idx][:-4]
+                print(image_name)
+                section_images.append(f"http://localhost:5001/static/archive/{image_name}.jpg")
+        results.append({"section": section, "images": section_images})
+
+    return {"sections": results}

@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import os
 from bson.objectid import ObjectId
 from typing import Dict, List, Optional
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
 router = APIRouter()
@@ -83,13 +84,20 @@ async def save_art_search(story_text: dict, current_user: str = Depends(get_curr
 @router.post("/save-generation")
 async def save_story_generation(story_data: dict, current_user: str = Depends(get_current_user), db = Depends(get_db)):
     try:
+        image_urls: List[str] = story_data.get("selectedImages", [])
+        story_text: str = story_data.get("generatedStory", "")
+
+        if not story_text:
+            raise HTTPException(status_code=400, detail="Missing generatedStory")
+
         db.users.update_one(
             {"_id": current_user},
             {
                 "$push": {
                     "savedStoryGenerations": {
-                        "text": story_data["storyText"],
-                        "image": story_data["imageUrl"],
+                        # "_id": ObjectId(),
+                        "text": story_text,
+                        "images": image_urls,
                         "dateAdded": datetime.utcnow(),
                     }
                 }
@@ -101,8 +109,11 @@ async def save_story_generation(story_data: dict, current_user: str = Depends(ge
         raise HTTPException(status_code=500, detail=f"Server error: {e}")
 
 @router.get("/retrieve-searches")
-async def retrieve_searches(current_user: str = Depends(get_current_user), db = Depends(get_db)) -> Dict[str, Optional[List[dict]]]:
-    user = await db.users.find_one({"_id": ObjectId(current_user)})
+async def retrieve_searches(current_user: str = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_db)) -> Dict[str, Optional[List[dict]]]:
+    user = await db.users.find_one(
+        {"_id": ObjectId(current_user)},
+        {"savedArtSearches": 1, "savedStoryGenerations": 1, "_id": 1}  # Explicitly include _id of the user document (optional)
+    )
 
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -111,3 +122,18 @@ async def retrieve_searches(current_user: str = Depends(get_current_user), db = 
         "savedArtSearches": user.get("savedArtSearches", []),
         "savedStoryGenerations": user.get("savedStoryGenerations", [])
     }
+
+@router.delete("/delete-generation/{generation_id}")
+async def delete_story_generation(generation_id: str, current_user: str = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_db)):
+    try:
+        delete_result = await db.users.update_one(
+            {"_id": current_user},
+            {"$pull": {"savedStoryGenerations": {"_id": ObjectId(generation_id)}}},
+        )
+        if delete_result.modified_count == 1:
+            return {"message": "Generation deleted successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="Generation not found")
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=f"Server error: {e}")

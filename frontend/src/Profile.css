@@ -61,6 +61,20 @@
 }
 
 .modal-history-image {
-    max-width: 50%;
+    max-width: 100%;
     height: auto;
+    margin-top: 10px;
+}
+
+.modal-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.modal-images-grid img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
 }

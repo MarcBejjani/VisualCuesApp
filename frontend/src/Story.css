@@ -139,3 +139,22 @@
     align-items: flex-start;
     gap: 10px;
   }
+
+.image-container.selected {
+    border: 3px solid #007bff; /* Example selection border */
+    border-radius: 8px;
+}
+
+.generated-story {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.generated-story h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+}

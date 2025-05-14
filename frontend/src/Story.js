@@ -5,22 +5,20 @@ import ReadAloudButton from './components/ReadAloudButton';
 
 const Story = () => {
     const contentRef = useRef(null);
-
     const [storyText, setStoryText] = useState('');
-
-    const [images, setImages] = useState([]);
-
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
-
+    const [sectionsWithImages, setSectionsWithImages] = useState([]);
+    const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({}); // { sectionIndex: imageUrl }
+    const [generatedStory, setGeneratedStory] = useState(''); // Single story string
+    const [generatingStories, setGeneratingStories] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
-
     const API_URL = 'http://localhost:5001';
 
     const handleSubmit = () => {
-        setImages([]);
-        
-        fetch(`${API_URL}/api/select-images`, {
+        setSectionsWithImages([]);
+        setSelectedImagesPerSection({});
+        setGeneratedStory('');
+
+        fetch(`${API_URL}/api/select-images-per-section`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -34,59 +32,78 @@ const Story = () => {
             return response.json();
         })
         .then(data => {
-            const imagesWithNames = data.images.map(imageUrl => {
-                const imageName = imageUrl.split('/').pop(); // Extract filename from URL
-                return { url: imageUrl, name: imageName };
-            });
-            setImages(imagesWithNames);
+            setSectionsWithImages(data.sections);
         })
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
-            setImages([]); // Clear images on error
+            setSectionsWithImages([]);
         });
     };
 
-    const handleImageClick = (image) => {
-        setSelectedImage(image);
-        setModalVisible(true);
+    const handleImageClick = (imageUrl, sectionIndex) => {
+        setSelectedImagesPerSection(prev => ({ ...prev, [sectionIndex]: imageUrl }));
     };
 
-    const closeModal = () => {
-        setModalVisible(false);
-        setSaveMessage('');
+    const handleGenerateStories = async () => {
+        setGeneratingStories(true);
+        setGeneratedStory('');
+
+        const selectedImageUrls = Object.values(selectedImagesPerSection);
+
+        try {
+            const response = await fetch(`${API_URL}/api/generate-stories-for-images`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ imageUrls: selectedImageUrls }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setGeneratedStory(data.story);
+        } catch (error) {
+            console.error('Error generating story:', error);
+        } finally {
+            setGeneratingStories(false);
+        }
     };
 
     const handleSaveClick = () => {
-        const token = localStorage.getItem('token'); // Check if user is logged in
-
+        const token = localStorage.getItem('token');
         if (!token) {
-            setSaveMessage('Please log in to save the story to your account.');
+            setSaveMessage('Please log in to save.');
             return;
         }
+
+        const saveData = {
+            generatedStory: generatedStory,
+            selectedImages: Object.values(selectedImagesPerSection), // Send the array of selected image URLs
+        };
 
         fetch(`${API_URL}/api/save-generation`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`, // Send the token for authentication
+                'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({
-                storyText: storyText,
-                imageUrl: selectedImage.url,
-            }),
+            body: JSON.stringify(saveData),
         })
-        .then((response) => {
+        .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             return response.json();
         })
-        .then((data) => {
-            setSaveMessage('Story saved successfully!');
+        .then(data => {
+            setSaveMessage('Saved successfully!');
         })
-        .catch((error) => {
-            console.error('There was a problem saving the story:', error);
-            setSaveMessage('Failed to save the story. Please try again.');
+        .catch(error => {
+            console.error('Error saving:', error);
+            setSaveMessage('Failed to save.');
         });
     };
 
@@ -112,49 +129,57 @@ const Story = () => {
                 <h1>Write your story below!</h1>
                 <div className="input-row">
                     <textarea
-                    className="search-textbox"
-                    placeholder="Input some keywords here..."
-                    value={storyText}
-                    onChange={(e) => setStoryText(e.target.value)}
+                        className="search-textbox"
+                        placeholder="Input some keywords here..."
+                        value={storyText}
+                        onChange={(e) => setStoryText(e.target.value)}
                     />
                     <SpeechInput onChange={setStoryText} initialValue={storyText} />
                 </div>
                 <button className="submit-button" onClick={handleSubmit}>Submit</button>
             </div>
-            {images.length > 0 && (
+
+            {sectionsWithImages.length > 0 && (
                 <div className="content-box">
-                    <h1>Image Selection</h1>
-                    <p>Our AI model chose these paintings as the ones most resembling your story.
-                    <br></br>
-                    Please choose one of them to generate a continuation to your text.</p>
-                    <div className="images-grid">
-                        {images.map((image, index) => (
-                            <div key={index} className="image-container">
-                                <img
-                                    src={image.url}
-                                    alt={`Generated art piece ${index + 1}`}
-                                    className="generated-image"
-                                    onClick={() => handleImageClick(image)}
-                                />
-                                <span className="image-name">{image.name}</span>
+                    <h1>Choose one image for each section</h1>
+                    {sectionsWithImages.map((sectionData, sectionIndex) => (
+                        <div key={sectionIndex} className="section-images">
+                            {sectionData.section && <p><strong>Section:</strong> {sectionData.section}</p>}
+                            <div className="images-grid">
+                                {sectionData.images.map((imageUrl, imageIndex) => (
+                                    <div
+                                        key={imageIndex}
+                                        className={`image-container ${selectedImagesPerSection[sectionIndex] === imageUrl ? 'selected' : ''}`}
+                                        onClick={() => handleImageClick(imageUrl, sectionIndex)}
+                                    >
+                                        <img
+                                            src={imageUrl}
+                                            alt={`Section ${sectionIndex + 1} ${imageIndex + 1}`}
+                                            className="generated-image"
+                                        />
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    ))}
+                    <button
+                        className="submit-button"
+                        onClick={handleGenerateStories}
+                        disabled={Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length || generatingStories}
+                    >
+                        {generatingStories ? 'Generating Story...' : 'Generate Story'}
+                    </button>
                 </div>
             )}
 
-            {/* Modal */}
-            {modalVisible && (
-                <div className="modal">
-                    <div className="modal-content">
-                        <span className="close-button" onClick={closeModal}>&times;</span>
-                        <img src={selectedImage.url} alt={selectedImage.name} className="modal-image" />
-                        <div className="modal-info">
-                            <span className="image-name">{selectedImage.name}</span>
-                            <button className="choose-button" onClick={handleSaveClick}>Save to History</button>
-                            {saveMessage && <p>{saveMessage}</p>}
-                        </div>
+            {generatedStory && (
+                <div className="content-box">
+                    <h1>Generated Story</h1>
+                    <div className="generated-story">
+                        <p>{generatedStory}</p>
                     </div>
+                    <button className="submit-button" onClick={handleSaveClick}>Save to History</button>
+                    {saveMessage && <p>{saveMessage}</p>}
                 </div>
             )}
         </div>

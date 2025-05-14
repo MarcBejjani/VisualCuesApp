@@ -7,3 +7,4 @@ FastAPI/static/archive
 FastAPI/archive
 FastAPI/venv
 .env
+.DS_Store

@@ -5,12 +5,11 @@ const Profile = () => {
     const [username, setUsername] = useState('');
     const [savedArtSearches, setSavedArtSearches] = useState([]);
     const [savedStoryGenerations, setSavedStoryGenerations] = useState([]);
-    const [expandedStory, setExpandedStory] = useState(null);
+    const [expandedItem, setExpandedItem] = useState(null); // Renamed from expandedStory
     const [deleteMessage, setDeleteMessage] = useState('');
 
     const API_URL = 'http://localhost:5001';
 
-    // Declare fetchUserProfile in the main component scope
     const fetchUserProfile = async () => {
         const token = localStorage.getItem('token');
         if (!token) return;
@@ -43,22 +42,22 @@ const Profile = () => {
             setUsername(user.username);
         }
 
-        fetchUserProfile(); // Call it on component mount
+        fetchUserProfile();
     }, []);
 
-    const handleStoryClick = (story) => {
-        setExpandedStory(story);
+    const handleItemClick = (item) => {
+        setExpandedItem(item); // Renamed from setExpandedStory
         setDeleteMessage('');
     };
 
     const closeModal = () => {
-        setExpandedStory(null);
+        setExpandedItem(null); // Renamed from setExpandedStory
         setDeleteMessage('');
     };
 
     const handleDeleteClick = async () => {
-        if (!expandedStory || !expandedStory._id) {
-            console.error('No story or ID to delete.');
+        if (!expandedItem || !expandedItem._id) {
+            console.error('No item or ID to delete.');
             return;
         }
 
@@ -68,8 +67,20 @@ const Profile = () => {
             return;
         }
 
+        let deleteEndpoint = '';
+        if (expandedItem.hasOwnProperty('images')) {
+            // It's a saved story generation
+            deleteEndpoint = `${API_URL}/api/delete-generation/${expandedItem._id}`;
+        } else if (expandedItem.hasOwnProperty('text') && !expandedItem.hasOwnProperty('images')) {
+            // It's a saved art search
+            deleteEndpoint = `${API_URL}/api/delete-art-search/${expandedItem._id}`;
+        } else {
+            console.error('Unknown item type for deletion.');
+            return;
+        }
+
         try {
-            const response = await fetch(`${API_URL}/api/delete-generation/${expandedStory._id}`, {
+            const response = await fetch(deleteEndpoint, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -78,17 +89,17 @@ const Profile = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setDeleteMessage(errorData.message || 'Failed to delete generation.');
-                console.error('Error deleting generation:', errorData);
+                setDeleteMessage(errorData.message || 'Failed to delete item.');
+                console.error('Error deleting item:', errorData);
                 return;
             }
 
-            setDeleteMessage('Generation deleted successfully.');
+            setDeleteMessage('Item deleted successfully.');
             fetchUserProfile();
             closeModal();
         } catch (error) {
-            console.error('Error deleting generation:', error);
-            setDeleteMessage('Failed to delete generation. Please try again.');
+            console.error('Error deleting item:', error);
+            setDeleteMessage('Failed to delete item. Please try again.');
         }
     };
 
@@ -108,7 +119,7 @@ const Profile = () => {
                             <div
                                 key={index}
                                 className="story-box"
-                                onClick={() => handleStoryClick(story)}
+                                onClick={() => handleItemClick(story)} // Renamed onClick handler
                             >
                                 <h3><strong>Date:</strong> {new Date(story.dateAdded).toLocaleString()}</h3>
                                 <p>{story.text.substring(0, 50)}...</p>
@@ -124,14 +135,14 @@ const Profile = () => {
                 <h1>Art Search History</h1>
                 <div className="story-list">
                     {savedArtSearches.length > 0 ? (
-                        savedArtSearches.map((story, index) => (
+                        savedArtSearches.map((search, index) => (
                             <div
                                 key={index}
                                 className="story-box"
-                                onClick={() => handleStoryClick(story)}
+                                onClick={() => handleItemClick(search)} // Renamed onClick handler
                             >
-                                <h3><strong>Date:</strong> {new Date(story.dateAdded).toLocaleString()}</h3>
-                                <p>{story.text.substring(0, 50)}...</p>
+                                <h3><strong>Date:</strong> {new Date(search.dateAdded).toLocaleString()}</h3>
+                                <p>{search.text.substring(0, 50)}...</p>
                             </div>
                         ))
                     ) : (
@@ -140,15 +151,15 @@ const Profile = () => {
                 </div>
             </div>
 
-            {expandedStory && (
+            {expandedItem && ( // Renamed from expandedStory
                 <div className="modal-history">
                     <div className="modal-history-content">
                         <span className="history-close-button" onClick={closeModal}>&times;</span>
-                        <h3><strong>Date:</strong> {new Date(expandedStory.dateAdded).toLocaleString()}</h3>
-                        <p>{expandedStory.text}</p>
-                        {expandedStory.images && Array.isArray(expandedStory.images) && expandedStory.images.length > 0 ? (
+                        <h3><strong>Date:</strong> {new Date(expandedItem.dateAdded).toLocaleString()}</h3>
+                        <p>{expandedItem.text}</p>
+                        {expandedItem.images && Array.isArray(expandedItem.images) && expandedItem.images.length > 0 ? (
                             <div className="modal-images-grid">
-                                {expandedStory.images.map((imageUrl, index) => (
+                                {expandedItem.images.map((imageUrl, index) => (
                                     <img
                                         key={index}
                                         src={imageUrl}
@@ -157,8 +168,8 @@ const Profile = () => {
                                     />
                                 ))}
                             </div>
-                        ) : expandedStory.image ? (
-                            <img src={expandedStory.image} alt="Art Search" className="modal-history-image" />
+                        ) : expandedItem.image ? (
+                            <img src={expandedItem.image} alt="Art Search" className="modal-history-image" />
                         ) : null}
                         <div className="modal-actions">
                             <button className="delete-button" onClick={handleDeleteClick}>Delete</button>

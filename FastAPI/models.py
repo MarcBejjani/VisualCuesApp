@@ -1,6 +1,17 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
+
+class SavedArtSearch(BaseModel):
+    text: str
+    dateAdded: datetime
+    _id: Optional[str] = None
+
+class SavedStoryGeneration(BaseModel):
+    text: str
+    images: List[str]
+    dateAdded: datetime
+    _id: Optional[str] = None
 
 class User(BaseModel):
     username: str
@@ -9,8 +20,8 @@ class User(BaseModel):
 
 class UserInDB(User):
     _id: str
-    savedArtSearches: Optional[List[dict]] = []
-    savedStoryGenerations: Optional[List[dict]] = []
+    savedArtSearches: Optional[List[SavedArtSearch]] = []
+    savedStoryGenerations: Optional[List[SavedStoryGeneration]] = []
 
 class Token(BaseModel):
     access_token: str

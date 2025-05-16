@@ -48,6 +48,16 @@ async def get_current_user(request: Request, db = Depends(get_db)) -> str:
     except Exception as e:
         print(f"Token verification failed: {e}")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token")
+    
+def convert_object_ids(obj):
+    if isinstance(obj, dict):
+        return {k: convert_object_ids(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_object_ids(item) for item in obj]
+    elif isinstance(obj, ObjectId):
+        return str(obj)
+    else:
+        return obj
 
 @router.post("/signup", response_model=UserInDB)
 async def signup(user: User, db = Depends(get_db)):
@@ -68,8 +78,11 @@ async def login(user: UserLogin, db = Depends(get_db)):
     db_user = await db.users.find_one({"username": user.username})
     if not db_user or not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=400, detail="Invalid username or password")
-    access_token = create_access_token(data={"userId": str(db_user["_id"])})
-    user_return = UserInDB(**db_user)
+
+    cleaned_user = convert_object_ids(db_user)
+    access_token = create_access_token(data={"userId": cleaned_user["_id"]})
+    user_return = UserInDB(**cleaned_user)
+
     return {"message": "Login successful", "token": access_token, "user": user_return}
 
 @router.get("/profile", response_model=UserInDB)
@@ -78,7 +91,7 @@ async def get_profile(current_user: UserInDB = Depends(get_current_user)):
 
 @router.post("/save-story")
 async def save_art_search(story_text: dict, current_user: str = Depends(get_current_user), db = Depends(get_db)):
-    db.users.update_one({"_id": current_user}, {"$push": {"savedArtSearches": {"text": story_text["storyText"], "dateAdded": datetime.utcnow()}}})
+    db.users.update_one({"_id": current_user}, {"$push": {"savedArtSearches": {"_id": ObjectId(), "text": story_text["storyText"], "dateAdded": datetime.utcnow()}}})
     return {"message": "Story saved successfully"}
 
 @router.post("/save-generation")
@@ -95,7 +108,7 @@ async def save_story_generation(story_data: dict, current_user: str = Depends(ge
             {
                 "$push": {
                     "savedStoryGenerations": {
-                        # "_id": ObjectId(),
+                        "_id": ObjectId(),
                         "text": story_text,
                         "images": image_urls,
                         "dateAdded": datetime.utcnow(),
@@ -112,15 +125,17 @@ async def save_story_generation(story_data: dict, current_user: str = Depends(ge
 async def retrieve_searches(current_user: str = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_db)) -> Dict[str, Optional[List[dict]]]:
     user = await db.users.find_one(
         {"_id": ObjectId(current_user)},
-        {"savedArtSearches": 1, "savedStoryGenerations": 1, "_id": 1}  # Explicitly include _id of the user document (optional)
+        {"savedArtSearches": 1, "savedStoryGenerations": 1, "_id": 1}
     )
 
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
+    cleaned_user = convert_object_ids(user)
+
     return {
-        "savedArtSearches": user.get("savedArtSearches", []),
-        "savedStoryGenerations": user.get("savedStoryGenerations", [])
+        "savedArtSearches": cleaned_user.get("savedArtSearches", []),
+        "savedStoryGenerations": cleaned_user.get("savedStoryGenerations", [])
     }
 
 @router.delete("/delete-generation/{generation_id}")
@@ -134,6 +149,21 @@ async def delete_story_generation(generation_id: str, current_user: str = Depend
             return {"message": "Generation deleted successfully"}
         else:
             raise HTTPException(status_code=404, detail="Generation not found")
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=f"Server error: {e}")
+    
+@router.delete("/delete-art-search/{search_id}")
+async def delete_art_search(search_id: str, current_user: str = Depends(get_current_user), db: AsyncIOMotorDatabase = Depends(get_db)):
+    try:
+        delete_result = await db.users.update_one(
+            {"_id": current_user},
+            {"$pull": {"savedArtSearches": {"_id": ObjectId(search_id)}}},
+        )
+        if delete_result.modified_count == 1:
+            return {"message": "Art search deleted successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="Art search not found")
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=f"Server error: {e}")

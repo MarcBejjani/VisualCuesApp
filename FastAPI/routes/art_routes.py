@@ -65,75 +65,33 @@ async def generate_story(body: dict):
     image_url = body.get("imageUrl")
     logger.info(f"Received generate-story request with imageUrl: {image_url}")
 
-    if not image_url:
-        raise HTTPException(status_code=400, detail="Missing imageUrl in request body")
+    # if not image_url:
+    #     raise HTTPException(status_code=400, detail="Missing imageUrl in request body")
 
-    # Extract local image path
-    local_path = image_url.replace("http://localhost:5001/", "./")
+    # # Extract local image path
+    # local_path = image_url.replace("http://localhost:5001/", "./")
 
-    if not os.path.exists(local_path):
-        raise HTTPException(status_code=404, detail="Image not found on the server")
+    # if not os.path.exists(local_path):
+    #     raise HTTPException(status_code=404, detail="Image not found on the server")
 
-    # Load the image
-    image = Image.open(local_path).convert("RGB")
+    # # Load the image
+    # image = Image.open(local_path).convert("RGB")
 
-    # Generate story prompt
-    prompt = "Imagine a magical story based on this image. Describe the setting, characters, and an interesting event."
+    # # Generate story prompt
+    # prompt = "Imagine a magical story based on this image. Describe the setting, characters, and an interesting event."
 
-    # Prepare input for the model
-    inputs = processor(images=image, text=prompt, return_tensors="pt").to("cuda" if torch.cuda.is_available() else "cpu")
+    # # Prepare input for the model
+    # inputs = processor(images=image, text=prompt, return_tensors="pt").to("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Generate the story
-    with torch.no_grad():
-        outputs = model.generate(**inputs, max_length=200)
+    # # Generate the story
+    # with torch.no_grad():
+    #     outputs = model.generate(**inputs, max_length=200)
 
-    story = processor.batch_decode(outputs, skip_special_tokens=True)[0]
-    story = story.replace("Imagine a magical story based on this image. Describe the setting, characters, and an interesting event. ", "")
+    # story = processor.batch_decode(outputs, skip_special_tokens=True)[0]
+    # story = story.replace("Imagine a magical story based on this image. Describe the setting, characters, and an interesting event. ", "")
+    story = 'blablabla'
 
     return {"text": story}
-
-
-@router.post("/generate-stories-for-images")
-async def generate_stories_for_images(body: dict):
-    imageUrls = body.get("imageUrls")
-    if not imageUrls:
-        raise HTTPException(status_code=400, detail="Missing imageUrls in request body")
-    
-    generated_stories = "blablabla"
-
-    # generated_stories = []
-    # for imageUrl in imageUrls:
-    #     logger.info(f"Generating story for imageUrl: {imageUrl}")
-    #     try:
-    #         # Extract local image path
-    #         local_path = imageUrl.replace("http://localhost:5001/", "./")
-    #         if not os.path.exists(local_path):
-    #             logger.error(f"Image not found: {local_path}")
-    #             generated_stories.append(f"Error: Image not found for {imageUrl}")
-    #             continue
-
-    #         # Load the image
-    #         image = Image.open(local_path).convert("RGB")
-
-    #         # Generate story prompt
-    #         prompt = "Imagine a magical story based on this image. Describe the setting, characters, and an interesting event."
-
-    #         # Prepare input for the model
-    #         inputs = processor(images=image, text=prompt, return_tensors="pt").to(device)
-
-    #         # Generate the story
-    #         with torch.no_grad():
-    #             outputs = model.generate(**inputs, max_length=200)
-
-    #         story = processor.batch_decode(outputs, skip_special_tokens=True)[0]
-    #         story = story.replace("Imagine a magical story based on this image. Describe the setting, characters, and an interesting event. ", "")
-    #         generated_stories.append(story)
-
-    #     except Exception as e:
-    #         logger.error(f"Error generating story for {imageUrl}: {e}")
-    #         generated_stories.append(f"Error generating story for {imageUrl}")
-
-    return {"story": generated_stories}
 
 
 @router.post("/select-images")

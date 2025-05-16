@@ -7,16 +7,13 @@ const Story = () => {
     const contentRef = useRef(null);
     const [storyText, setStoryText] = useState('');
     const [sectionsWithImages, setSectionsWithImages] = useState([]);
-    const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({}); // { sectionIndex: imageUrl }
-    const [generatedStory, setGeneratedStory] = useState(''); // Single story string
-    const [generatingStories, setGeneratingStories] = useState(false);
+    const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({});
     const [saveMessage, setSaveMessage] = useState('');
     const API_URL = 'http://localhost:5001';
 
     const handleSubmit = () => {
         setSectionsWithImages([]);
         setSelectedImagesPerSection({});
-        setGeneratedStory('');
 
         fetch(`${API_URL}/api/select-images-per-section`, {
             method: 'POST',
@@ -44,34 +41,6 @@ const Story = () => {
         setSelectedImagesPerSection(prev => ({ ...prev, [sectionIndex]: imageUrl }));
     };
 
-    const handleGenerateStories = async () => {
-        setGeneratingStories(true);
-        setGeneratedStory('');
-
-        const selectedImageUrls = Object.values(selectedImagesPerSection);
-
-        try {
-            const response = await fetch(`${API_URL}/api/generate-stories-for-images`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ imageUrls: selectedImageUrls }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            setGeneratedStory(data.story);
-        } catch (error) {
-            console.error('Error generating story:', error);
-        } finally {
-            setGeneratingStories(false);
-        }
-    };
-
     const handleSaveClick = () => {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -80,8 +49,8 @@ const Story = () => {
         }
 
         const saveData = {
-            generatedStory: generatedStory,
-            selectedImages: Object.values(selectedImagesPerSection), // Send the array of selected image URLs
+            generatedStory: storyText,
+            selectedImages: Object.values(selectedImagesPerSection),
         };
 
         fetch(`${API_URL}/api/save-generation`, {
@@ -164,21 +133,11 @@ const Story = () => {
                     ))}
                     <button
                         className="submit-button"
-                        onClick={handleGenerateStories}
-                        disabled={Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length || generatingStories}
+                        onClick={handleSaveClick}
+                        disabled={Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length}
                     >
-                        {generatingStories ? 'Generating Story...' : 'Generate Story'}
+                        Save Story
                     </button>
-                </div>
-            )}
-
-            {generatedStory && (
-                <div className="content-box">
-                    <h1>Generated Story</h1>
-                    <div className="generated-story">
-                        <p>{generatedStory}</p>
-                    </div>
-                    <button className="submit-button" onClick={handleSaveClick}>Save to History</button>
                     {saveMessage && <p>{saveMessage}</p>}
                 </div>
             )}

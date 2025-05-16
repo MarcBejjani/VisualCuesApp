@@ -8,3 +8,4 @@ FastAPI/archive
 FastAPI/venv
 .env
 .DS_Store
+__pycache__

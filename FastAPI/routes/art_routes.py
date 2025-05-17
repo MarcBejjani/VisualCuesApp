@@ -9,6 +9,7 @@ from transformers import AutoProcessor, AutoModelForCausalLM
 from PIL import Image
 import requests
 from io import BytesIO
+import language_tool_python
 import logging
 import os
 import re
@@ -43,6 +44,11 @@ def get_clip_embedding(text):
         # Normalize to unit length
         text_features = text_features / np.linalg.norm(text_features, axis=1, keepdims=True)
         return text_features
+    
+def grammarCorrector(text):
+    tool = language_tool_python.LanguageTool('en-US')
+    result = tool.correct(text)
+    return result
 
 @router.post("/search-images")
 async def search_images(body: dict, db=Depends(get_db)):
@@ -96,7 +102,8 @@ async def generate_story(body: dict):
 
 @router.post("/select-images")
 async def select_images(body: dict, db=Depends(get_db)):
-    query_embedding = get_clip_embedding(body["story"])
+    story = grammarCorrector(body["story"])
+    query_embedding = get_clip_embedding(story)
     k = 3
     _, indicesImages = indexImages.search(query_embedding, k)
 
@@ -112,7 +119,7 @@ async def select_images(body: dict, db=Depends(get_db)):
 
 @router.post("/select-images-per-section")
 async def select_images_per_section(body: dict, db=Depends(get_db)):
-    story = body["story"]
+    story = grammarCorrector(body["story"])
     # Simple splitting by sentence ends (., !, ?)
     sections = [s.strip() for s in re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!)\s', story) if s.strip()]
     results = []

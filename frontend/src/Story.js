@@ -9,6 +9,7 @@ const Story = () => {
     const [sectionsWithImages, setSectionsWithImages] = useState([]);
     const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({});
     const [saveMessage, setSaveMessage] = useState('');
+    const [language, setLanguage] = useState('EN');
     const API_URL = 'http://localhost:5001';
 
     const handleSubmit = () => {
@@ -20,7 +21,7 @@ const Story = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ story: storyText }),
+            body: JSON.stringify({ story: storyText, language: language }),
         })
         .then(response => {
             if (!response.ok) {
@@ -51,6 +52,7 @@ const Story = () => {
         const saveData = {
             generatedStory: storyText,
             selectedImages: Object.values(selectedImagesPerSection),
+            language: language,
         };
 
         fetch(`${API_URL}/api/save-generation`, {
@@ -76,6 +78,10 @@ const Story = () => {
         });
     };
 
+    const handleLanguageChange = (event) => {
+        setLanguage(event.target.value);
+    };
+
     return (
         <div>
             <div className="content-box" ref={contentRef}>
@@ -90,6 +96,7 @@ const Story = () => {
                     targetRef={contentRef}
                     extraText={[
                         "In the box below, you can enter text, or click a button to speak the words instead of typing.",
+                        "To the right of the text box, you can select the language for processing the story.",
                         "Finally, there is a submit button to click once you are done inputting the text."
                     ]}
                 />
@@ -103,9 +110,20 @@ const Story = () => {
                         value={storyText}
                         onChange={(e) => setStoryText(e.target.value)}
                     />
+                    <select
+                        className="language-select"
+                        value={language}
+                        onChange={handleLanguageChange}
+                    >
+                        <option value="EN">EN</option>
+                        <option value="FR">FR</option>
+                    </select>
+                    
+                </div>
+                <div className='input-buttons'>
+                    <button className="submit-button" onClick={handleSubmit}>Submit</button>
                     <SpeechInput onChange={setStoryText} initialValue={storyText} />
                 </div>
-                <button className="submit-button" onClick={handleSubmit}>Submit</button>
             </div>
 
             {sectionsWithImages.length > 0 && (

@@ -44,15 +44,20 @@ def get_clip_embedding(text):
         # Normalize to unit length
         text_features = text_features / np.linalg.norm(text_features, axis=1, keepdims=True)
         return text_features
-    
-def grammarCorrector(text):
-    tool = language_tool_python.LanguageTool('en-US')
+
+language_map = {
+    'EN': 'en-US',
+    'FR': 'fr'
+}
+
+def grammarCorrector(text, language):
+    tool = language_tool_python.LanguageTool(language_map[language])
     result = tool.correct(text)
     return result
 
 @router.post("/search-images")
 async def search_images(body: dict, db=Depends(get_db)):
-    query_embedding = get_clip_embedding(body["story"])
+    query_embedding = get_clip_embedding(grammarCorrector(body["story"], language_map[body["language"]]))
     k = 3
     _, indicesImages = indexImages.search(query_embedding, k)
 
@@ -102,7 +107,7 @@ async def generate_story(body: dict):
 
 @router.post("/select-images")
 async def select_images(body: dict, db=Depends(get_db)):
-    story = grammarCorrector(body["story"])
+    story = grammarCorrector(body["story"], body["language"])
     query_embedding = get_clip_embedding(story)
     k = 3
     _, indicesImages = indexImages.search(query_embedding, k)
@@ -119,7 +124,8 @@ async def select_images(body: dict, db=Depends(get_db)):
 
 @router.post("/select-images-per-section")
 async def select_images_per_section(body: dict, db=Depends(get_db)):
-    story = grammarCorrector(body["story"])
+    story = grammarCorrector(body["story"], body["language"])
+
     # Simple splitting by sentence ends (., !, ?)
     sections = [s.strip() for s in re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!)\s', story) if s.strip()]
     results = []

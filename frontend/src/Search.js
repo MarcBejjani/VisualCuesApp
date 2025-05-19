@@ -8,6 +8,7 @@ const Search = () => {
 
     const [storyText, setStoryText] = useState('');
     const [images, setImages] = useState([]);
+    const [language, setLanguage] = useState('EN');
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [loading, setLoading] = useState(false); 
@@ -26,7 +27,7 @@ const Search = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ story: storyText }),
+            body: JSON.stringify({ story: storyText, language: language }),
         })
         .then(response => {
             if (!response.ok) {
@@ -137,6 +138,10 @@ const Search = () => {
         });
     };
 
+    const handleLanguageChange = (event) => {
+        setLanguage(event.target.value);
+    };
+
     return (
         <div>
             <div className="content-box" ref={contentRef}>
@@ -159,14 +164,25 @@ const Search = () => {
                 <h1>Enter some keywords to Search for Art!</h1>
                 <div className="input-row">
                     <textarea
-                    className="search-textbox"
-                    placeholder="Input some keywords here..."
-                    value={storyText}
-                    onChange={(e) => setStoryText(e.target.value)}
+                        className="search-textbox"
+                        placeholder="Input some keywords here..."
+                        value={storyText}
+                        onChange={(e) => setStoryText(e.target.value)}
                     />
+                    <select
+                        className="language-select"
+                        value={language}
+                        onChange={handleLanguageChange}
+                    >
+                        <option value="EN">EN</option>
+                        <option value="FR">FR</option>
+                    </select>
+                    
+                </div>
+                <div className='input-buttons'>
+                    <button className="submit-button" onClick={handleSubmit}>Submit</button>
                     <SpeechInput onChange={setStoryText} initialValue={storyText} />
                 </div>
-                <button className="submit-button" onClick={handleSubmit}>Submit</button>
             </div>
             {images.length > 0 && (
                 <div className="content-box">

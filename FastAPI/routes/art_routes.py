@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
-from routes import get_db
+from routes import get_db, correct_grammer_and_translate
 import open_clip
 import faiss
 import pickle
@@ -7,11 +7,8 @@ import torch
 import numpy as np
 from transformers import AutoProcessor, AutoModelForCausalLM
 from PIL import Image
-import requests
 from io import BytesIO
-import language_tool_python
 import logging
-import os
 import re
 
 router = APIRouter()
@@ -44,32 +41,39 @@ def get_clip_embedding(text):
         # Normalize to unit length
         text_features = text_features / np.linalg.norm(text_features, axis=1, keepdims=True)
         return text_features
-
-language_map = {
-    'EN': 'en-US',
-    'FR': 'fr'
-}
-
-def grammarCorrector(text, language):
-    tool = language_tool_python.LanguageTool(language_map[language])
-    result = tool.correct(text)
-    return result
-
-@router.post("/search-images")
-async def search_images(body: dict, db=Depends(get_db)):
-    query_embedding = get_clip_embedding(grammarCorrector(body["story"], language_map[body["language"]]))
-    k = 3
-    _, indicesImages = indexImages.search(query_embedding, k)
-
-    listArt = []
-    print("\n--- Image results ---")
-    for i, idx in enumerate(indicesImages[0]):
+    
+def get_top_k_images_from_text(text, k=3):
+    query_embedding = get_clip_embedding(text)
+    _, indices = indexImages.search(query_embedding, k)
+    images = []
+    for idx in indices[0]:
         if idx < len(metadataImages):
             image_name = metadataImages[idx][:-4]
             print(image_name)
-            listArt.append(f"http://localhost:5001/static/archive/{image_name}.jpg")
+            images.append(f"http://localhost:5001/static/archive/{image_name}.jpg")
+    return images
+
+
+@router.post("/search-images")
+async def search_images(body: dict, db=Depends(get_db)):
+    text = correct_grammer_and_translate(body["story"], body["language"])
+    listArt = get_top_k_images_from_text(text)
 
     return {"images": listArt}
+
+@router.post("/select-images-per-section")
+async def select_images_per_section(body: dict, db=Depends(get_db)):
+    story = correct_grammer_and_translate(body["story"], body["language"])
+
+    # Simple splitting by sentence ends (., !, ?)
+    sections = [s.strip() for s in re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!)\s', story) if s.strip()]
+    results = []
+
+    for section in sections:
+        section_images = get_top_k_images_from_text(section)
+        results.append({"section": section, "images": section_images})
+
+    return {"sections": results}
 
 @router.post("/generate-story")
 async def generate_story(body: dict):
@@ -103,45 +107,3 @@ async def generate_story(body: dict):
     story = 'blablabla'
 
     return {"text": story}
-
-
-@router.post("/select-images")
-async def select_images(body: dict, db=Depends(get_db)):
-    story = grammarCorrector(body["story"], body["language"])
-    query_embedding = get_clip_embedding(story)
-    k = 3
-    _, indicesImages = indexImages.search(query_embedding, k)
-
-    listArt = []
-    print("\n--- Image results ---")
-    for i, idx in enumerate(indicesImages[0]):
-        if idx < len(metadataImages):
-            image_name = metadataImages[idx][:-4]
-            print(image_name)
-            listArt.append(f"http://localhost:5001/static/archive/{image_name}.jpg")
-
-    return {"images": listArt}
-
-@router.post("/select-images-per-section")
-async def select_images_per_section(body: dict, db=Depends(get_db)):
-    story = grammarCorrector(body["story"], body["language"])
-
-    # Simple splitting by sentence ends (., !, ?)
-    sections = [s.strip() for s in re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!)\s', story) if s.strip()]
-    results = []
-
-    for section in sections:
-        query_embedding = get_clip_embedding(section)
-        k = 3
-        _, indicesImages = indexImages.search(query_embedding, k)
-
-        section_images = []
-        print(f"\n--- Image results for section: '{section}' ---")
-        for i, idx in enumerate(indicesImages[0]):
-            if idx < len(metadataImages):
-                image_name = metadataImages[idx][:-4]
-                print(image_name)
-                section_images.append(f"http://localhost:5001/static/archive/{image_name}.jpg")
-        results.append({"section": section, "images": section_images})
-
-    return {"sections": results}

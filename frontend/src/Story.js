@@ -10,7 +10,7 @@ const Story = () => {
     const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({});
     const [saveMessage, setSaveMessage] = useState('');
     const [language, setLanguage] = useState('EN');
-    const API_URL = 'http://localhost:5001';
+    const API_URL = 'http://backend:5001';
 
     const handleSubmit = () => {
         setSectionsWithImages([]);

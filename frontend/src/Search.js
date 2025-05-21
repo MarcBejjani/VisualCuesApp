@@ -15,7 +15,7 @@ const Search = () => {
     const [responseText, setResponseText] = useState(null);
     const [saveMessage, setSaveMessage] = useState('');
 
-    const API_URL = 'http://localhost:5001';
+    const API_URL = 'http://backend:5001';
 
     // Handle form submission to fetch images
     const handleSubmit = () => {

@@ -7,7 +7,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const API_URL = 'http://localhost:5001';
+    const API_URL = 'http://backend:5001';
 
     const handleSubmit = async (event) => {
         event.preventDefault(); // Prevent default form submission behavior

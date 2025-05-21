@@ -10,7 +10,7 @@ const SignUp = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const API_URL = 'http://localhost:5001';
+    const API_URL = 'http://backend:5001';
 
     const handleSubmit = async (event) => {
         event.preventDefault();

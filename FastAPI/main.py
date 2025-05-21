@@ -20,8 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-# app.mount("/static", StaticFiles(directory="/app/static"), name="static")
+STATIC_DIR = os.getenv("STATIC_DIR", "static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Include routers
 app.include_router(art_routes.router, prefix="/api", tags=["Art"])

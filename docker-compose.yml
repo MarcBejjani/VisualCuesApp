@@ -19,6 +19,8 @@ services:
       - mongo
     env_file:
       - ./FastAPI/.env
+    environment:
+      - STATIC_DIR=/app/static
     volumes:
       - ./FastAPI/static/archive:/app/static/archive
     networks:

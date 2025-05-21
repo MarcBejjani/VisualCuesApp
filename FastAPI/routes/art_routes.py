@@ -10,6 +10,7 @@ from PIL import Image
 from io import BytesIO
 import logging
 import re
+import os
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -33,6 +34,8 @@ with open("./embeddingsCLIP/metadata/metadata_images.pkl", "rb") as f:
     metadataImages = pickle.load(f)
 print("FAISS index and metadata loaded successfully!")
 
+EXTERNAL_IP = os.getenv("EXTERNAL_IP", "localhost")
+
 def get_clip_embedding(text):
     with torch.no_grad():
         text_tokens = clip_tokenizer(text)
@@ -50,7 +53,7 @@ def get_top_k_images_from_text(text, k=3):
         if idx < len(metadataImages):
             image_name = metadataImages[idx][:-4]
             print(image_name)
-            images.append(f"http://localhost:5001/static/archive/{image_name}.jpg")
+            images.append(f"http://{EXTERNAL_IP}:5001/static/archive/{image_name}.jpg")
     return images
 
 

@@ -10,7 +10,7 @@ const Story = () => {
     const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({});
     const [saveMessage, setSaveMessage] = useState('');
     const [language, setLanguage] = useState('EN');
-    const API_URL = 'http://34.116.159.183:5001';
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
     const handleSubmit = () => {
         setSectionsWithImages([]);

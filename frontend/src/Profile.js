@@ -8,7 +8,7 @@ const Profile = () => {
     const [expandedItem, setExpandedItem] = useState(null); // Renamed from expandedStory
     const [deleteMessage, setDeleteMessage] = useState('');
 
-    const API_URL = 'http://backend:5001';
+    const API_URL = 'http://34.116.159.183:5001';
 
     const fetchUserProfile = async () => {
         const token = localStorage.getItem('token');

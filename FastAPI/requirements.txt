@@ -90,3 +90,4 @@ wcwidth==0.2.13
 language_tool_python==2.9.3
 deep-translator==1.11.4
 sentence-transformers==4.1.0
+pandas==2.2.3

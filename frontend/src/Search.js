@@ -68,7 +68,7 @@ const Search = () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                imageUrl: selectedImage.url
+                imageUrl: selectedImage.url, dataset: dataset
             }),
         })
         .then((response) => {

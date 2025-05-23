@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# MODEL_NAME = "Qwen/Qwen3-1.7B"
-# tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-# model = AutoModelForCausalLM.from_pretrained(
-#     MODEL_NAME, torch_dtype="auto", device_map="cuda:0"
-# )
+MODEL_NAME = "Qwen/Qwen3-1.7B"
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_NAME, torch_dtype="auto", device_map="cuda:0"
+)
 
 # Load the model **once** at startup
 print("Loading embedding model...")
@@ -87,33 +87,44 @@ async def select_images_per_section(body: dict, db=Depends(get_db)):
 
 @router.post("/generate-story")
 async def generate_story(body: dict):
+    dataset = body["dataset"]
     image_url = body.get("imageUrl")
     logger.info(f"Received generate-story request with imageUrl: {image_url}")
 
-    # if not image_url:
-    #     raise HTTPException(status_code=400, detail="Missing imageUrl in request body")
+    if not image_url:
+        raise HTTPException(status_code=400, detail="Missing imageUrl in request body")
 
-    # # Extract local image path
-    # local_path = image_url.replace("http://localhost:5001/", "./")
+    # Extract local image path
+    local_path = image_url.replace("http://localhost:5001/", "./")
 
-    # if not os.path.exists(local_path):
-    #     raise HTTPException(status_code=404, detail="Image not found on the server")
+    metadataImages = wikiMetadataImages if dataset == 'Wiki' else semArtMetadataImages if dataset == 'SemArt' else museumMetadataImages
 
-    # # Load the image
-    # image = Image.open(local_path).convert("RGB")
+    row = metadataImages[metadataImages['filename'] == local_path]
+    art_descriptions = [row['description']]
 
-    # # Generate story prompt
-    # prompt = "Imagine a magical story based on this image. Describe the setting, characters, and an interesting event."
+    base_prompt = (
+        "Descriptions:\n"
+        + "\n".join(f"- {desc}" for desc in art_descriptions)
+        + "\n\n"
+        "Write a story that takes inspiration on these scenes. Use 2–3 short paragraphs (approximately). "
+        "Tell it like a simple, flowing story with a start, middle and an end. The paragraphs have to be conneced and follow a sequence of events."
+    )
 
-    # # Prepare input for the model
-    # inputs = processor(images=image, text=prompt, return_tensors="pt").to("cuda" if torch.cuda.is_available() else "cpu")
+    messages = [{"role": "user", "content": base_prompt}]
 
-    # # Generate the story
-    # with torch.no_grad():
-    #     outputs = model.generate(**inputs, max_length=200)
+    text = tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
+            )
+    model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
-    # story = processor.batch_decode(outputs, skip_special_tokens=True)[0]
-    # story = story.replace("Imagine a magical story based on this image. Describe the setting, characters, and an interesting event. ", "")
-    story = 'blablabla'
+    generated_ids = model.generate(
+                    **model_inputs,
+                    max_new_tokens=1024,
+                    do_sample=True,
+                    temperature=0.9,
+                )
+
+    output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist()
+    story = tokenizer.decode(output_ids, skip_special_tokens=True).strip()
 
     return {"text": story}

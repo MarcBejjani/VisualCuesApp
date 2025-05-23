@@ -21,7 +21,7 @@ services:
       - ./FastAPI/.env
     environment:
       - STATIC_DIR=/app/static
-      - EXTERNAL_IP=34.116.159.183
+      - EXTERNAL_IP=34.118.19.208
     volumes:
       - ./FastAPI/static/archive:/app/static/archive
     networks:
@@ -38,7 +38,7 @@ services:
     build:
       context: ./frontend
       args:
-        REACT_APP_API_URL: http://34.116.159.183:5001
+        REACT_APP_API_URL: http://34.118.19.208:5001
     ports:
       - "3000:3000"
     depends_on:

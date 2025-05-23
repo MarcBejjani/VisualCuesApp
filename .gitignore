@@ -9,3 +9,4 @@ FastAPI/venv
 .env
 .DS_Store
 __pycache__
+FastAPI/embeddingsCLIP/*

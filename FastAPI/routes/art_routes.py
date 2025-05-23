@@ -11,6 +11,7 @@ from io import BytesIO
 import logging
 import re
 import os
+import pandas
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

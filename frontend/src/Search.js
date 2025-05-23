@@ -9,9 +9,10 @@ const Search = () => {
     const [storyText, setStoryText] = useState('');
     const [images, setImages] = useState([]);
     const [language, setLanguage] = useState('EN');
+    const [dataset, setDataset] = useState('Wiki');
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
-    const [loading, setLoading] = useState(false); 
+    const [loading, setLoading] = useState(false);
     const [responseText, setResponseText] = useState(null);
     const [saveMessage, setSaveMessage] = useState('');
 
@@ -27,7 +28,7 @@ const Search = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ story: storyText, language: language }),
+            body: JSON.stringify({ story: storyText, language: language, dataset: dataset }),
         })
         .then(response => {
             if (!response.ok) {
@@ -142,13 +143,17 @@ const Search = () => {
         setLanguage(event.target.value);
     };
 
+    const handleDatasetChange = (event) => {
+        setDataset(event.target.value);
+    };
+
     return (
         <div>
             <div className="content-box" ref={contentRef}>
                 <h1>Art Search Instructions</h1>
                 <p>
                     The story generation tool allows you to search for art pieces by typing in some keywords.
-                    Our AI model will return some paintings from our database, and you can then select the one that you find most interesting, and the model will then generate a story based on it. 
+                    Our AI model will return some paintings from our database, and you can then select the one that you find most interesting, and the model will then generate a story based on it.
                     <br></br>
                     Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.
                 </p>
@@ -169,15 +174,33 @@ const Search = () => {
                         value={storyText}
                         onChange={(e) => setStoryText(e.target.value)}
                     />
-                    <select
-                        className="language-select"
-                        value={language}
-                        onChange={handleLanguageChange}
-                    >
-                        <option value="EN">EN</option>
-                        <option value="FR">FR</option>
-                    </select>
-                    
+                    <div className="select-row">
+                        <div className="select-group">
+                            <label htmlFor="language-select-id" className="select-label">Select Language:</label>
+                            <select
+                                id="language-select-id"
+                                className="language-select"
+                                value={language}
+                                onChange={handleLanguageChange}
+                            >
+                                <option value="EN">EN</option>
+                                <option value="FR">FR</option>
+                            </select>
+                        </div>
+                        <div className="select-group">
+                            <label htmlFor="dataset-select-id" className="select-label">Select Dataset:</label>
+                            <select
+                                id="dataset-select-id"
+                                className="language-select"
+                                value={dataset}
+                                onChange={handleDatasetChange}
+                            >
+                                <option value="Wiki">Wiki</option>
+                                <option value="SemArt">SemArt</option>
+                                <option value="Museum">Museum</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 <div className='input-buttons'>
                     <button className="submit-button" onClick={handleSubmit}>Submit</button>

@@ -7,6 +7,8 @@
     border-radius: 5px;
     resize: vertical; /* Allow vertical resizing only */
     margin-top: 20px;
+    box-sizing: border-box; /* Added for consistent sizing */
+    min-height: 50px; /* Ensure it's not too small if resizing */
 }
 
 .submit-button {
@@ -136,9 +138,11 @@
 
 .input-row {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
-  }
+    flex-direction: column; /* Stack children vertically */
+    align-items: center; /* Center children horizontally */
+    gap: 10px; /* Space between textarea and select row */
+    width: 100%; /* Ensure input-row takes full width */
+}
 
 .image-container.selected {
     border: 3px solid #007bff; /* Example selection border */
@@ -159,12 +163,37 @@
     color: #333;
 }
 
-.language-select {
+/* NEW STYLES FOR LABELS AND SELECTS (same as Search.css) */
+
+.select-row {
+    display: flex; /* Makes the select groups align horizontally */
+    gap: 20px; /* Space between the two select groups (language and dataset) */
+    margin-top: 5px;
+    width: calc(100% - 40px); /* Adjust based on your overall content box padding */
+    box-sizing: border-box;
+    justify-content: center; /* Center the select groups within this row */
+    flex-wrap: wrap; /* Allows wrapping if screen gets too small */
+}
+
+.select-group {
+    display: flex; /* Arrange label and select horizontally */
+    align-items: baseline; /* Align label text with select baseline */
+    gap: 5px; /* Space between label and select */
+}
+
+.select-label {
+    font-size: 16px; /* Adjust font size as needed */
+    color: #333; /* Darker color for readability */
+    white-space: nowrap; /* Prevent label text from wrapping */
+}
+
+.language-select { /* This class is applied to both select elements */
+    width: 120px; /* Fixed width for the select box */
     padding: 8px;
     border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    margin-top: 25px;
+    border-radius: 5px; /* Using 5px for consistency with other elements */
+    font-size: 16px; /* Consistency with other text inputs */
+    background-color: #f9f9f9; /* Consistency with other elements */
 }
 
 .input-buttons {

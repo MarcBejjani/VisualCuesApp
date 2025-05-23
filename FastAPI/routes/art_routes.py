@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
 from routes import get_db, correct_grammer_and_translate
-import open_clip
+from sentence_transformers import SentenceTransformer
 import faiss
 import pickle
 import torch
 import numpy as np
-from transformers import AutoProcessor, AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from PIL import Image
 from io import BytesIO
 import logging
@@ -17,50 +17,57 @@ logger = logging.getLogger(__name__)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# MODEL_NAME = "Qwen/Qwen-VL-Chat"
-# processor = AutoProcessor.from_pretrained(MODEL_NAME, trust_remote_code=True)
-# model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, trust_remote_code=True).to("cuda" if torch.cuda.is_available() else "cpu")
+# MODEL_NAME = "Qwen/Qwen3-1.7B"
+# tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+# model = AutoModelForCausalLM.from_pretrained(
+#     MODEL_NAME, torch_dtype="auto", device_map="cuda:0"
+# )
 
 # Load the model **once** at startup
-print("Loading CLIP model...")
-clip_model, _, _ = open_clip.create_model_and_transforms("ViT-L-14-quickgelu", pretrained="openai")
-clip_tokenizer = open_clip.get_tokenizer("ViT-L-14-quickgelu")
-print("CLIP model loaded successfully!")
+print("Loading embedding model...")
+embedding_model = SentenceTransformer("thenlper/gte-large")
 
 # Load FAISS index and metadata once
 print("Loading FAISS index and metadata...")
-indexImages = faiss.read_index("./embeddingsCLIP/index/faiss_index_images.bin")
-with open("./embeddingsCLIP/metadata/metadata_images.pkl", "rb") as f:
-    metadataImages = pickle.load(f)
+wikiIndexImages = faiss.read_index("./embeddingsCLIP/index/wikiart_index.faiss")
+with open("./embeddingsCLIP/metadata/wikiart_metadata.pkl", "rb") as f:
+    wikiMetadataImages = pickle.load(f)
+
+semArtIndexImages = faiss.read_index("./embeddingsCLIP/index/semart_index.faiss")
+with open("./embeddingsCLIP/metadata/semart_metadata.pkl", "rb") as f:
+    semArtMetadataImages = pickle.load(f)
+
+museumIndexImages = faiss.read_index("./embeddingsCLIP/index/museum_index.faiss")
+with open("./embeddingsCLIP/metadata/museum_metadata.pkl", "rb") as f:
+    museumMetadataImages = pickle.load(f)
 print("FAISS index and metadata loaded successfully!")
 
 EXTERNAL_IP = os.getenv("EXTERNAL_IP", "localhost")
 
-def get_clip_embedding(text):
-    with torch.no_grad():
-        text_tokens = clip_tokenizer(text)
-        text_features = clip_model.encode_text(text_tokens)
-        text_features = text_features.numpy()
-        # Normalize to unit length
-        text_features = text_features / np.linalg.norm(text_features, axis=1, keepdims=True)
-        return text_features
+def get_gte_embedding(text):
+    embedding = embedding_model.encode([text], convert_to_numpy=True)
+    embedding = embedding / np.linalg.norm(embedding, axis=1, keepdims=True)  # Normalize
+    return embedding.astype("float32")
     
-def get_top_k_images_from_text(text, k=3):
-    query_embedding = get_clip_embedding(text)
+def get_top_k_images_from_text(text, dataset, k=3):
+    query_embedding = get_gte_embedding(text)
+
+    indexImages = wikiIndexImages if dataset == 'Wiki' else semArtIndexImages if dataset == 'SemArt' else museumIndexImages
+    metadataImages = wikiMetadataImages if dataset == 'Wiki' else semArtMetadataImages if dataset == 'SemArt' else museumMetadataImages
+
     _, indices = indexImages.search(query_embedding, k)
     images = []
     for idx in indices[0]:
         if idx < len(metadataImages):
-            image_name = metadataImages[idx][:-4]
-            print(image_name)
-            images.append(f"http://{EXTERNAL_IP}:5001/static/archive/{image_name}.jpg")
+            image_name = metadataImages.iloc[idx]['filename']
+            images.append(f"http://{EXTERNAL_IP}:5001/static/archive/{image_name}")
     return images
 
 
 @router.post("/search-images")
 async def search_images(body: dict, db=Depends(get_db)):
     text = correct_grammer_and_translate(body["story"], body["language"])
-    listArt = get_top_k_images_from_text(text)
+    listArt = get_top_k_images_from_text(text, body["dataset"])
 
     return {"images": listArt}
 
@@ -73,7 +80,7 @@ async def select_images_per_section(body: dict, db=Depends(get_db)):
     results = []
 
     for section in sections:
-        section_images = get_top_k_images_from_text(section)
+        section_images = get_top_k_images_from_text(section, body["dataset"])
         results.append({"section": section, "images": section_images})
 
     return {"sections": results}

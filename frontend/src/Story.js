@@ -10,6 +10,7 @@ const Story = () => {
     const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({});
     const [saveMessage, setSaveMessage] = useState('');
     const [language, setLanguage] = useState('EN');
+    const [dataset, setDataset] = useState('Wiki');
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
     const handleSubmit = () => {
@@ -21,7 +22,7 @@ const Story = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ story: storyText, language: language }),
+            body: JSON.stringify({ story: storyText, language: language, dataset: dataset }),
         })
         .then(response => {
             if (!response.ok) {
@@ -53,6 +54,7 @@ const Story = () => {
             generatedStory: storyText,
             selectedImages: Object.values(selectedImagesPerSection),
             language: language,
+            dataset: dataset,
         };
 
         fetch(`${API_URL}/api/save-generation`, {
@@ -82,6 +84,10 @@ const Story = () => {
         setLanguage(event.target.value);
     };
 
+    const handleDatasetChange = (event) => {
+        setDataset(event.target.value);
+    };
+
     return (
         <div>
             <div className="content-box" ref={contentRef}>
@@ -105,20 +111,38 @@ const Story = () => {
                 <h1>Write your story below!</h1>
                 <div className="input-row">
                     <textarea
-                        className="search-textbox"
+                        className="story-textbox"
                         placeholder="Input some keywords here..."
                         value={storyText}
                         onChange={(e) => setStoryText(e.target.value)}
                     />
-                    <select
-                        className="language-select"
-                        value={language}
-                        onChange={handleLanguageChange}
-                    >
-                        <option value="EN">EN</option>
-                        <option value="FR">FR</option>
-                    </select>
-                    
+                    <div className="select-row">
+                        <div className="select-group">
+                            <label htmlFor="language-select-id" className="select-label">Select Language:</label>
+                            <select
+                                id="language-select-id"
+                                className="language-select"
+                                value={language}
+                                onChange={handleLanguageChange}
+                            >
+                                <option value="EN">EN</option>
+                                <option value="FR">FR</option>
+                            </select>
+                        </div>
+                        <div className="select-group">
+                            <label htmlFor="dataset-select-id" className="select-label">Select Dataset:</label>
+                            <select
+                                id="dataset-select-id"
+                                className="language-select"
+                                value={dataset}
+                                onChange={handleDatasetChange}
+                            >
+                                <option value="Wiki">Wiki</option>
+                                <option value="SemArt">SemArt</option>
+                                <option value="Museum">Museum</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 <div className='input-buttons'>
                     <button className="submit-button" onClick={handleSubmit}>Submit</button>

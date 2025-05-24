@@ -1,4 +1,5 @@
 static/archive/
+static/
 *.jpg
 *.png
 *.mp4

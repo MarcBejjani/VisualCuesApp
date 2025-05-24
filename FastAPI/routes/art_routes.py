@@ -49,19 +49,21 @@ def get_gte_embedding(text):
     embedding = embedding_model.encode([text], convert_to_numpy=True)
     embedding = embedding / np.linalg.norm(embedding, axis=1, keepdims=True)  # Normalize
     return embedding.astype("float32")
-    
+
 def get_top_k_images_from_text(text, dataset, k=3):
     query_embedding = get_gte_embedding(text)
 
     indexImages = wikiIndexImages if dataset == 'Wiki' else semArtIndexImages if dataset == 'SemArt' else museumIndexImages
     metadataImages = wikiMetadataImages if dataset == 'Wiki' else semArtMetadataImages if dataset == 'SemArt' else museumMetadataImages
+    folder_name = 'wikiart' if dataset == 'Wiki' else 'semart' if dataset == 'SemArt' else 'museum'
+    filename = 'filename' if dataset == 'Wiki' else 'IMAGE_FILE' if dataset == 'SemArt' else 'imageLinkHigh'
 
     _, indices = indexImages.search(query_embedding, k)
     images = []
     for idx in indices[0]:
         if idx < len(metadataImages):
-            image_name = metadataImages.iloc[idx]['filename']
-            images.append(f"http://{EXTERNAL_IP}:5001/static/archive/{image_name}")
+            image_name = metadataImages.iloc[idx][filename]
+            images.append(f"http://{EXTERNAL_IP}:5001/static/{folder_name}/{image_name}")
     return images
 
 

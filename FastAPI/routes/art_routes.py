@@ -45,6 +45,9 @@ print("FAISS index and metadata loaded successfully!")
 
 EXTERNAL_IP = os.getenv("EXTERNAL_IP", "localhost")
 
+prefix_1 = "/DATA/public/siamese/dataset_mrbab/art-foto/mod/intranet/"
+prefix_2 = "/DATA/public/siamese/dataset_mrbab/art-foto/old/intranet/"
+
 def get_gte_embedding(text):
     embedding = embedding_model.encode([text], convert_to_numpy=True)
     embedding = embedding / np.linalg.norm(embedding, axis=1, keepdims=True)  # Normalize
@@ -62,7 +65,7 @@ def get_top_k_images_from_text(text, dataset, k=3):
     images = []
     for idx in indices[0]:
         if idx < len(metadataImages):
-            image_name = metadataImages.iloc[idx][filename]
+            image_name = (metadataImages.iloc[idx][filename]).removeprefix(prefix_1).removeprefix(prefix_2)
             images.append(f"http://{EXTERNAL_IP}:5001/static/{folder_name}/{image_name}")
     return images
 

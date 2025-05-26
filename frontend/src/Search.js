@@ -150,9 +150,9 @@ const Search = () => {
     return (
         <div>
             <div className="content-box" ref={contentRef}>
-                <h1>Art Search Instructions</h1>
+                <h1>Art Exploration Instructions</h1>
                 <p>
-                    The story generation tool allows you to search for art pieces by typing in some keywords.
+                    The art exploration tool allows you to search for art pieces by typing in some keywords.
                     Our AI model will return some paintings from our database, and you can then select the one that you find most interesting, and the model will then generate a story based on it.
                     <br></br>
                     Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.
@@ -203,7 +203,9 @@ const Search = () => {
                     </div>
                 </div>
                 <div className='input-buttons'>
-                    <button className="submit-button" onClick={handleSubmit}>Submit</button>
+                    <button className="submit-button" onClick={handleSubmit} disabled={loading}>
+                        {loading ? "Searching..." : "Submit"}
+                    </button>
                     <SpeechInput onChange={setStoryText} initialValue={storyText} />
                 </div>
             </div>
@@ -226,7 +228,9 @@ const Search = () => {
                             </div>
                         ))}
                     </div>
-                    <button id="images-button" className="submit-button" onClick={handleSubmit}>Refresh Images</button>
+                    <button id="images-button" className="submit-button" onClick={handleSubmit} disabled={loading}>
+                        {loading ? "Refreshing" : "Refresh Images"}
+                    </button>
                 </div>
             )}
 

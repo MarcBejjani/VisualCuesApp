@@ -8,15 +8,6 @@ import ReadAloudButton from './components/ReadAloudButton';
 const Home = () => {
     const contentRef = useRef(null);
 
-    const [fontSize, setFontSize] = useState(() => {
-        const rootFont = getComputedStyle(document.documentElement).getPropertyValue('--base-font-size');
-        return parseInt(rootFont) || 20;
-    });
-
-    useEffect(() => {
-        document.documentElement.style.setProperty('--base-font-size', `${fontSize}px`);
-    }, [fontSize]);
-
     return (
         <div>
             <div className="content-box" ref={contentRef}>
@@ -48,24 +39,6 @@ const Home = () => {
                         "Use the navigation buttons to explore the app."
                     ]}
                 />
-            </div>
-
-            <div className="content-box">
-                <label htmlFor="font-size-slider">
-                    Adjust Font Size: {fontSize}px
-                </label>
-                <input
-                    id="font-size-slider"
-                    type="range"
-                    min="14"
-                    max="32"
-                    value={fontSize}
-                    onChange={(e) => setFontSize(e.target.value)}
-                    style={{ width: '100%', margin: '1rem 0' }}
-                />
-                <p>
-                    This text will scale dynamically based on the font size you select. Try moving the slider!
-                </p>
             </div>
         </div>
     );

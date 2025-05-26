@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import './Navbar.css';
 import logo from './images/logepl.jpg';
 import { useTheme } from './components/ThemeContext';
+import AccessibilityPanel from './components/AccessibilityPanel';
 
 const Navbar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isPanelOpen, setIsPanelOpen] = useState(false);
 
     const { toggleTheme } = useTheme();
 
@@ -27,19 +29,27 @@ const Navbar = () => {
         setIsLoggedIn(false); // Update the state to logged out
     };
 
+    const handleOpenPanel = () => {
+        setIsPanelOpen(true);
+    };
+
+    const handleClosePanel = () => {
+        setIsPanelOpen(false);
+    };
+
     return (
         <nav className="navbar navbar-expand-lg navbar-dark custom-navbar">
             <Link to="/">
                 <img src={logo} alt="Logo" className="logo" />
             </Link>
-            <button id='theme-button' onClick={toggleTheme}>Toggle Theme</button>
+            <button id='accessibility-button' onClick={handleOpenPanel}>Accessibility</button>
             <div className="center-text">
-                Visual Cues
+                Art Evoke
             </div>
             <div className="nav-links">
                 <Link to="/">Home</Link>
-                <Link to="/story">Story</Link>
-                <Link to="/artsearch">Art Search</Link>
+                <Link to="/story">Memory Reconstruction</Link>
+                <Link to="/artsearch">Art Exploration</Link>
                 <Link to="/about">About</Link>
 
                 {/* Conditionally render Account dropdown based on login state */}
@@ -65,6 +75,9 @@ const Navbar = () => {
                     </div>
                 )}
             </div>
+
+            {/* Conditionally render the Accessibility Panel */}
+            {isPanelOpen && <AccessibilityPanel onClose={handleClosePanel} />}
         </nav>
     );
 };

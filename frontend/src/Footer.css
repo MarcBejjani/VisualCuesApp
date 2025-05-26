@@ -3,13 +3,41 @@
     padding: 20px;
     text-align: center;
     margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .footer p {
     font-size: 14px;
     color: #cccccc;
+    margin: 2px 0;  
 }
 
-.footer a{
+.footer a {
     color: white;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+.footer-logos {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    margin-top: 20px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.footer-logo {
+    height: 110px;
+    width: auto;
+    max-width: 150px;
+    object-fit: contain;
+    flex-shrink: 0;
 }

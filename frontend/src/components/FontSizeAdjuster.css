@@ -1,0 +1,54 @@
+.font-size-adjuster {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color, #ccc); /* Add a subtle separator */
+    text-align: center; /* Center content within the adjuster */
+}
+
+.font-size-adjuster h3 {
+    margin-bottom: 10px;
+    color: var(--text-color, #333);
+}
+
+.font-size-slider {
+    width: calc(100% - 20px); /* Adjust width to fit within panel padding */
+    margin: 10px auto; /* Center the slider */
+    -webkit-appearance: none; /* Override default slider styles for custom appearance */
+    appearance: none;
+    height: 8px; /* Height of the track */
+    border-radius: 5px;
+    background: var(--slider-track-color, #d3d3d3); /* Default track color */
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.font-size-slider:hover {
+    opacity: 1;
+}
+
+/* Style for the slider thumb (the draggable part) */
+.font-size-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px; /* Size of the thumb */
+    height: 20px; /* Size of the thumb */
+    border-radius: 50%; /* Make it circular */
+    background: var(--slider-thumb-color, #007bff); /* Default thumb color */
+    cursor: pointer;
+}
+
+.font-size-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--slider-thumb-color, #007bff);
+    cursor: pointer;
+}
+
+.slider-example-text {
+    font-size: var(--base-font-size); /* This text will react to the slider */
+    margin-top: 15px;
+    color: var(--text-color, #555);
+}

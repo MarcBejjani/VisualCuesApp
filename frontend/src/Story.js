@@ -9,8 +9,13 @@ const Story = () => {
     const [sectionsWithImages, setSectionsWithImages] = useState([]);
     const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({});
     const [saveMessage, setSaveMessage] = useState('');
-    const [language, setLanguage] = useState('EN');
+
+    const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('Wiki');
+    const [segmentation, setSegmentation] = useState('conservative');
+
+    const [loading, setLoading] = useState(false);
+
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
     const handleSubmit = () => {
@@ -22,7 +27,7 @@ const Story = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ story: storyText, language: language, dataset: dataset }),
+            body: JSON.stringify({ story: storyText, language: language, dataset: dataset, segmentation: segmentation }),
         })
         .then(response => {
             if (!response.ok) {
@@ -36,6 +41,8 @@ const Story = () => {
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
             setSectionsWithImages([]);
+        }).finally(() => {
+            setLoading(false);
         });
     };
 
@@ -88,12 +95,16 @@ const Story = () => {
         setDataset(event.target.value);
     };
 
+    const handleSegmentationChange = (event) => {
+        setSegmentation(event.target.value);
+    };
+
     return (
         <div>
             <div className="content-box" ref={contentRef}>
-                <h1>Story Generation Instructions</h1>
+                <h1>Memory Reconstruction Instructions</h1>
                 <p>
-                    The story generation tool allows you to input a story or a memory (or part of it).
+                    The memory reconstruction tool allows you to input a story or a memory (or part of it).
                     After submitting the text, our AI model will suggest some paintings from our database which can hopefully help you remember more details of the story.
                     <br></br>
                     Feel free to keep on adding details to the text if the art pieces help you!
@@ -125,8 +136,12 @@ const Story = () => {
                                 value={language}
                                 onChange={handleLanguageChange}
                             >
-                                <option value="EN">EN</option>
-                                <option value="FR">FR</option>
+                                <option value="en">English</option>
+                                <option value="fr">French</option>
+                                <option value="nl">Dutch</option>
+                                <option value="es">Spanish</option>
+                                <option value="pt">Portuguese</option>
+                                <option value="de">German</option>
                             </select>
                         </div>
                         <div className="select-group">
@@ -142,10 +157,24 @@ const Story = () => {
                                 <option value="Museum">Museum</option>
                             </select>
                         </div>
+                        <div className="select-group">
+                            <label htmlFor="dataset-select-id" className="select-label">Select Text Segmentation Scheme:</label>
+                            <select
+                                id="dataset-select-id"
+                                className="language-select"
+                                value={dataset}
+                                onChange={handleSegmentationChange}
+                            >
+                                <option value="conservative">Conservative</option>
+                                <option value="broad">Broad</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div className='input-buttons'>
-                    <button className="submit-button" onClick={handleSubmit}>Submit</button>
+                    <button className="submit-button" onClick={handleSubmit} disabled={loading}>
+                        {loading ? "Searching..." : "Submit"}
+                    </button>
                     <SpeechInput onChange={setStoryText} initialValue={storyText} />
                 </div>
             </div>

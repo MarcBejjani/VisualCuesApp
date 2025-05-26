@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
-from routes import get_db, correct_grammer_and_translate
+from routes import get_db, correct_grammer_and_translate, doTextSegmentation
 from sentence_transformers import SentenceTransformer
 import faiss
 import pickle
@@ -81,8 +81,8 @@ async def search_images(body: dict, db=Depends(get_db)):
 async def select_images_per_section(body: dict, db=Depends(get_db)):
     story = correct_grammer_and_translate(body["story"], body["language"])
 
-    # Simple splitting by sentence ends (., !, ?)
-    sections = [s.strip() for s in re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!)\s', story) if s.strip()]
+    # Split the Story into Segments
+    sections = doTextSegmentation(body["segmentation"], story)
     results = []
 
     for section in sections:

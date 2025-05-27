@@ -8,7 +8,7 @@ const Search = () => {
 
     const [storyText, setStoryText] = useState('');
     const [images, setImages] = useState([]);
-    const [language, setLanguage] = useState('EN');
+    const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('Wiki');
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -183,8 +183,12 @@ const Search = () => {
                                 value={language}
                                 onChange={handleLanguageChange}
                             >
-                                <option value="EN">EN</option>
-                                <option value="FR">FR</option>
+                                <option value="en">English</option>
+                                <option value="fr">French</option>
+                                <option value="nl">Dutch</option>
+                                <option value="es">Spanish</option>
+                                <option value="pt">Portuguese</option>
+                                <option value="de">German</option>
                             </select>
                         </div>
                         <div className="select-group">

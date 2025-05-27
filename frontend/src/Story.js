@@ -19,6 +19,7 @@ const Story = () => {
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
     const handleSubmit = () => {
+        setLoading(true);
         setSectionsWithImages([]);
         setSelectedImagesPerSection({});
 
@@ -162,11 +163,11 @@ const Story = () => {
                             <select
                                 id="dataset-select-id"
                                 className="language-select"
-                                value={dataset}
+                                value={segmentation}
                                 onChange={handleSegmentationChange}
                             >
                                 <option value="conservative">Conservative</option>
-                                <option value="broad">Broad</option>
+                                <option value="broader">Broad</option>
                             </select>
                         </div>
                     </div>

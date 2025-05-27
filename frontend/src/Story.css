@@ -203,3 +203,15 @@
     margin-top: 10px;
     align-items: center;
 }
+
+/* Add this to your Story.css */
+.error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    text-align: left; /* Align with the textarea */
+    width: calc(100% - 40px); /* Match textarea width */
+    padding-left: 20px; /* Match textarea padding */
+    box-sizing: border-box;
+}

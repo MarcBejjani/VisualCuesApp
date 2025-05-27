@@ -35,8 +35,14 @@ def doTextSegmentation(mode, text):
     
     pattern = r'(?<=[.!?])\s+(?=\S)'
     sentences = re.split(pattern, text.strip())
+    sentences = [s.strip() for s in sentences if s.strip()] 
+
     if mode == "conservative":
-        return get_segments(sentences, 3, step=2)
+        segments = get_segments(sentences, 3, step=2)
     elif mode == "broader":
-        return get_segments(sentences, 2, step=1)
+        segments = get_segments(sentences, 2, step=1)
+    else:
+        segments = []
+
+    return segments if segments else [text.strip()]
     

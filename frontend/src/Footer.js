@@ -15,7 +15,6 @@ const Footer = () => {
             <p><a href="mailto:[augusto.silva@student.uclouvain.be]">augusto.silva@student.uclouvain.be</a></p>
             <div className="footer-logos">
                 <img src={logoUcl} alt='UCL' className="footer-logo"></img>
-                <img src={logoEpl} alt='EPL' className="footer-logo"></img>
                 <img src={logoMuseum} alt='Museum' className="footer-logo"></img>
                 <img src={logoIdLab} alt='IDLAB' className="footer-logo"></img>
             </div>

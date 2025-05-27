@@ -73,7 +73,7 @@ def get_top_k_images_from_text(text, dataset, k=3):
 @router.post("/search-images")
 async def search_images(body: dict, db=Depends(get_db)):
     text = correct_grammer_and_translate(body["story"], body["language"])
-    listArt = get_top_k_images_from_text(text, body["dataset"])
+    listArt = get_top_k_images_from_text(text, body["dataset"], k=6)
 
     return {"images": listArt}
 
@@ -86,7 +86,7 @@ async def select_images_per_section(body: dict, db=Depends(get_db)):
     results = []
 
     for section in sections:
-        section_images = get_top_k_images_from_text(section, body["dataset"])
+        section_images = get_top_k_images_from_text(section, body["dataset"], k=int(body['k']))
         results.append({"section": section, "images": section_images})
 
     return {"sections": results}
@@ -94,19 +94,21 @@ async def select_images_per_section(body: dict, db=Depends(get_db)):
 @router.post("/generate-story")
 async def generate_story(body: dict):
     dataset = body["dataset"]
-    image_url = body.get("imageUrl")
-    logger.info(f"Received generate-story request with imageUrl: {image_url}")
+    image_urls = body.get("imageUrls")
 
-    if not image_url:
-        raise HTTPException(status_code=400, detail="Missing imageUrl in request body")
+    if not image_urls:
+        raise HTTPException(status_code=400, detail="Missing imageUrls in request body")
 
-    # Extract local image path
-    local_path = image_url.replace("http://localhost:5001/", "./")
+    dataset_name = 'wikiart' if dataset == 'Wiki' else 'semart' if dataset == 'SemArt' else 'museum'
+    image_urls = [url.replace(f"http://localhost:5001/static/{dataset_name}/", "") for url in image_urls]
 
     metadataImages = wikiMetadataImages if dataset == 'Wiki' else semArtMetadataImages if dataset == 'SemArt' else museumMetadataImages
 
-    row = metadataImages[metadataImages['filename'] == local_path]
-    art_descriptions = [row['description']]
+    art_descriptions = [
+        metadataImages.loc[metadataImages['filename'] == name, 'description'].values[0]
+        for name in image_urls
+        if not metadataImages.loc[metadataImages['filename'] == name, 'description'].empty
+    ]
 
     base_prompt = (
         "Descriptions:\n"

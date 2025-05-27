@@ -11,23 +11,23 @@ const Home = () => {
     return (
         <div>
             <div className="content-box" ref={contentRef}>
-                <h1>Welcome to our Visual Cues application!</h1>
+                <h1>Welcome to our Art Evoke application!</h1>
                 <p>
-                    This website allows you to interact with different AI models that can generate stories based on your input, or
-                    suggest different paintings based on a search criteria.
+                    This website allows you to interact with different AI models that can suggest different paintings based on a provided story,
+                    or generate a story based on selected art.
                     <br />
                     To get started, please click on one of the two options down below!
                 </p>
                 <div className="images-container">
                     <Link to="/story" className="image-link">
                         <div className="image-wrapper">
-                            <img src={storyImage} alt="Story Generation" className="clickable-image" />
+                            <img src={storyImage} alt="Memory Reconstruction" className="clickable-image" />
                             <span className="image-text">Generate Images from a Story</span>
                         </div>
                     </Link>
                     <Link to="/artsearch" className="image-link">
                         <div className="image-wrapper">
-                            <img src={artImage} alt="Art Search" className="clickable-image" />
+                            <img src={artImage} alt="Art Exploration" className="clickable-image" />
                             <span className="image-text">Search for Art with Keywords</span>
                         </div>
                     </Link>

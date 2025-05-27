@@ -13,22 +13,30 @@ const Story = () => {
     const [language, setLanguage] = useState('en');
     const [dataset, setDataset] = useState('Wiki');
     const [segmentation, setSegmentation] = useState('conservative');
+    const [numImagesPerSection, setNumImagesPerSection] = useState(1); // <--- NEW STATE: k value, default to 1
 
     const [loading, setLoading] = useState(false);
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
-    const handleSubmit = () => {
+    const handleSubmit = (k = numImagesPerSection) => {
         setLoading(true);
         setSectionsWithImages([]);
         setSelectedImagesPerSection({});
+        setNumImagesPerSection(k);
 
         fetch(`${API_URL}/api/select-images-per-section`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ story: storyText, language: language, dataset: dataset, segmentation: segmentation }),
+            body: JSON.stringify({
+                story: storyText,
+                language: language,
+                dataset: dataset,
+                segmentation: segmentation,
+                k: k
+            }),
         })
         .then(response => {
             if (!response.ok) {
@@ -55,7 +63,16 @@ const Story = () => {
         const token = localStorage.getItem('token');
         if (!token) {
             setSaveMessage('Please log in to save.');
+            setTimeout(() => setSaveMessage(''), 3000); // Clear message after 3 seconds
             return;
+        }
+
+        const allSectionsCovered = sectionsWithImages.every((_, index) => selectedImagesPerSection.hasOwnProperty(index));
+
+        if (!allSectionsCovered) {
+             setSaveMessage('Please select an image for every section before saving.');
+             setTimeout(() => setSaveMessage(''), 4000);
+             return;
         }
 
         const saveData = {
@@ -63,6 +80,7 @@ const Story = () => {
             selectedImages: Object.values(selectedImagesPerSection),
             language: language,
             dataset: dataset,
+            segmentation: segmentation,
         };
 
         fetch(`${API_URL}/api/save-generation`, {
@@ -81,11 +99,17 @@ const Story = () => {
         })
         .then(data => {
             setSaveMessage('Saved successfully!');
+            setTimeout(() => setSaveMessage(''), 3000);
         })
         .catch(error => {
             console.error('Error saving:', error);
             setSaveMessage('Failed to save.');
+            setTimeout(() => setSaveMessage(''), 3000);
         });
+    };
+
+    const handleRequestMoreImages = () => {
+        handleSubmit(5);
     };
 
     const handleLanguageChange = (event) => {
@@ -159,9 +183,9 @@ const Story = () => {
                             </select>
                         </div>
                         <div className="select-group">
-                            <label htmlFor="dataset-select-id" className="select-label">Select Text Segmentation Scheme:</label>
+                            <label htmlFor="segmentation-select-id" className="select-label">Image Selection:</label>
                             <select
-                                id="dataset-select-id"
+                                id="segmentation-select-id"
                                 className="language-select"
                                 value={segmentation}
                                 onChange={handleSegmentationChange}
@@ -173,7 +197,7 @@ const Story = () => {
                     </div>
                 </div>
                 <div className='input-buttons'>
-                    <button className="submit-button" onClick={handleSubmit} disabled={loading}>
+                    <button className="submit-button" onClick={() => handleSubmit(1)} disabled={loading || !storyText.trim()}>
                         {loading ? "Searching..." : "Submit"}
                     </button>
                     <SpeechInput onChange={setStoryText} initialValue={storyText} />
@@ -184,18 +208,18 @@ const Story = () => {
                 <div className="content-box">
                     <h1>Choose one image for each section</h1>
                     {sectionsWithImages.map((sectionData, sectionIndex) => (
-                        <div key={sectionIndex} className="section-images">
+                        <div key={sectionIndex} className="section-images-container">
                             {sectionData.section && <p><strong>Section:</strong> {sectionData.section}</p>}
                             <div className="images-grid">
                                 {sectionData.images.map((imageUrl, imageIndex) => (
                                     <div
-                                        key={imageIndex}
+                                        key={`${sectionIndex}-${imageIndex}`}
                                         className={`image-container ${selectedImagesPerSection[sectionIndex] === imageUrl ? 'selected' : ''}`}
                                         onClick={() => handleImageClick(imageUrl, sectionIndex)}
                                     >
                                         <img
                                             src={imageUrl}
-                                            alt={`Section ${sectionIndex + 1} ${imageIndex + 1}`}
+                                            alt={`Section ${sectionIndex + 1} Image ${imageIndex + 1}`}
                                             className="generated-image"
                                         />
                                     </div>
@@ -203,13 +227,24 @@ const Story = () => {
                             </div>
                         </div>
                     ))}
-                    <button
-                        className="submit-button"
-                        onClick={handleSaveClick}
-                        disabled={Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length}
-                    >
-                        Save Story
-                    </button>
+                    <div className="buttons-container">
+                        {numImagesPerSection === 1 && (
+                            <button
+                                className="submit-button"
+                                onClick={handleRequestMoreImages}
+                                disabled={loading || !storyText.trim()} // Disable if loading or no story text
+                            >
+                                Show 5 Images per Section
+                            </button>
+                        )}
+                        <button
+                            className="submit-button"
+                            onClick={handleSaveClick}
+                            disabled={loading || Object.keys(selectedImagesPerSection).length !== sectionsWithImages.length}
+                        >
+                            Save Story
+                        </button>
+                    </div>
                     {saveMessage && <p>{saveMessage}</p>}
                 </div>
             )}

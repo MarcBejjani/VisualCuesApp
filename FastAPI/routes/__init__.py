@@ -7,10 +7,21 @@ def get_db():
 import language_tool_python
 from deep_translator import GoogleTranslator
 
+language_tools = {
+    "en": language_tool_python.LanguageTool("en-US"),
+    "fr": language_tool_python.LanguageTool("fr"),
+    "nl": language_tool_python.LanguageTool("nl"),
+    "es": language_tool_python.LanguageTool("es"),
+    "pt": language_tool_python.LanguageTool("pt"),
+    "de": language_tool_python.LanguageTool("de")
+}
+
 def grammarCorrector(text, language):
-    tool = language_tool_python.LanguageTool(language)
-    result = tool.correct(text)
-    return result
+    tool = language_tools.get(language)
+    if not tool:
+        tool = language_tool_python.LanguageTool(language)
+        language_tools[language] = tool 
+    return tool.correct(text)
 
 def translate(text, src_language):
     return GoogleTranslator(source=src_language, target='en').translate(text)

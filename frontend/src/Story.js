@@ -167,7 +167,7 @@ const Story = () => {
                                 onChange={handleSegmentationChange}
                             >
                                 <option value="conservative">Conservative</option>
-                                <option value="broader">Broad</option>
+                                <option value="broader">Broader</option>
                             </select>
                         </div>
                     </div>

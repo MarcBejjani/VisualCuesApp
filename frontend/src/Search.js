@@ -12,7 +12,10 @@ const Search = () => {
     const [dataset, setDataset] = useState('Wiki');
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+
+    const [submitLoading, setSubmitLoading] = useState(false);
     const [loading, setLoading] = useState(false);
+
     const [responseText, setResponseText] = useState(null);
     const [saveMessage, setSaveMessage] = useState('');
 
@@ -20,6 +23,7 @@ const Search = () => {
 
     // Handle form submission to fetch images
     const handleSubmit = () => {
+        setSubmitLoading(true);
         setResponseText(null);
         setImages([]);
 
@@ -46,6 +50,8 @@ const Search = () => {
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
             setImages([]); // Clear images on error
+        }).finally(() => {
+            setSubmitLoading(false);
         });
     };
 
@@ -207,8 +213,8 @@ const Search = () => {
                     </div>
                 </div>
                 <div className='input-buttons'>
-                    <button className="submit-button" onClick={handleSubmit} disabled={loading}>
-                        {loading ? "Searching..." : "Submit"}
+                    <button className="submit-button" onClick={handleSubmit} disabled={submitLoading}>
+                        {submitLoading ? "Searching..." : "Submit"}
                     </button>
                     <SpeechInput onChange={setStoryText} initialValue={storyText} />
                 </div>
@@ -232,8 +238,8 @@ const Search = () => {
                             </div>
                         ))}
                     </div>
-                    <button id="images-button" className="submit-button" onClick={handleSubmit} disabled={loading}>
-                        {loading ? "Refreshing" : "Refresh Images"}
+                    <button id="images-button" className="submit-button" onClick={handleSubmit} disabled={submitLoading}>
+                        {submitLoading ? "Refreshing" : "Refresh Images"}
                     </button>
                 </div>
             )}

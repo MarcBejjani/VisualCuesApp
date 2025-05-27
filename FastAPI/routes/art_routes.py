@@ -43,6 +43,24 @@ with open("./embeddingsCLIP/metadata/museum_metadata.pkl", "rb") as f:
     museumMetadataImages = pickle.load(f)
 print("FAISS index and metadata loaded successfully!")
 
+index_by_dataset = {
+    "wikiart": wikiIndexImages,
+    "semart": semArtIndexImages,
+    "museum": museumIndexImages,
+}
+
+metadata_by_dataset = {
+    "wikiart": wikiMetadataImages,
+    "semart": semArtMetadataImages,
+    "museum": museumMetadataImages
+}
+
+filename_columns = {
+    "wikiart": "filename",
+    "semart": "IMAGE_FILE",
+    "museum": "imageLinkHigh"
+}
+
 EXTERNAL_IP = os.getenv("EXTERNAL_IP", "localhost")
 
 prefix_1 = "/DATA/public/siamese/dataset_mrbab/art-foto/mod/intranet/"
@@ -56,17 +74,16 @@ def get_gte_embedding(text):
 def get_top_k_images_from_text(text, dataset, k=3):
     query_embedding = get_gte_embedding(text)
 
-    indexImages = wikiIndexImages if dataset == 'Wiki' else semArtIndexImages if dataset == 'SemArt' else museumIndexImages
-    metadataImages = wikiMetadataImages if dataset == 'Wiki' else semArtMetadataImages if dataset == 'SemArt' else museumMetadataImages
-    folder_name = 'wikiart' if dataset == 'Wiki' else 'semart' if dataset == 'SemArt' else 'museum'
-    filename = 'filename' if dataset == 'Wiki' else 'IMAGE_FILE' if dataset == 'SemArt' else 'imageLinkHigh'
+    indexImages = index_by_dataset[dataset]
+    metadataImages = metadata_by_dataset[dataset]
+    filename = filename_columns[dataset]
 
     _, indices = indexImages.search(query_embedding, k)
     images = []
     for idx in indices[0]:
         if idx < len(metadataImages):
             image_name = (metadataImages.iloc[idx][filename]).removeprefix(prefix_1).removeprefix(prefix_2)
-            images.append(f"http://{EXTERNAL_IP}:5001/static/{folder_name}/{image_name}")
+            images.append(f"http://{EXTERNAL_IP}:5001/static/{dataset}/{image_name}")
     return images
 
 
@@ -93,22 +110,45 @@ async def select_images_per_section(body: dict, db=Depends(get_db)):
 
 @router.post("/generate-story")
 async def generate_story(body: dict):
-    dataset = body["dataset"]
-    image_urls = body.get("imageUrls")
+    data = body["selectedImagesByDataset"]
 
-    if not image_urls:
-        raise HTTPException(status_code=400, detail="Missing imageUrls in request body")
+    cleaned_filenames_by_dataset = {}
 
-    dataset_name = 'wikiart' if dataset == 'Wiki' else 'semart' if dataset == 'SemArt' else 'museum'
-    image_urls = [url.replace(f"http://localhost:5001/static/{dataset_name}/", "") for url in image_urls]
+    for key, urls in data.items():
+        prefix = f"http://{EXTERNAL_IP}:5001/static/{key}/"
+        cleaned_filenames_by_dataset[key] = [
+            url.replace(prefix, '') for url in urls
+        ]
 
-    metadataImages = wikiMetadataImages if dataset == 'Wiki' else semArtMetadataImages if dataset == 'SemArt' else museumMetadataImages
+    art_descriptions = []
 
-    art_descriptions = [
-        metadataImages.loc[metadataImages['filename'] == name, 'description'].values[0]
-        for name in image_urls
-        if not metadataImages.loc[metadataImages['filename'] == name, 'description'].empty
-    ]
+    for dataset, filenames in cleaned_filenames_by_dataset.items():
+        df = metadata_by_dataset[dataset]
+        filename_col = filename_columns[dataset]
+
+        for name in filenames:
+            if dataset == 'museum':
+                # Try first prefix
+                full_name_1 = prefix_1 + name
+                match = df.loc[df[filename_col] == full_name_1, 'description']
+
+                # If no match, try second prefix
+                if match.empty:
+                    full_name_2 = prefix_2 + name
+                    match = df.loc[df[filename_col] == full_name_2, 'description']
+
+                if not match.empty:
+                    art_descriptions.append(match.values[0])
+                else:
+                    print(f"[Warning] No description found for museum filename (tried both prefixes): {name}")
+
+            else:
+                # Regular matching for wikiart and semart
+                match = df.loc[df[filename_col] == name, 'description']
+                if not match.empty:
+                    art_descriptions.append(match.values[0])
+                else:
+                    print(f"[Warning] No description found for {dataset} filename: {name}")
 
     base_prompt = (
         "Descriptions:\n"

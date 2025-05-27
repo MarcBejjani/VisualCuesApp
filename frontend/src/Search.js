@@ -8,10 +8,11 @@ const Search = () => {
 
     const [storyText, setStoryText] = useState('');
     const [images, setImages] = useState([]); // This will hold images from the *current* search
-    const [selectedImages, setSelectedImages] = useState([]); // This will hold *all* selected images across searches
+    const [selectedImages, setSelectedImages] = useState([]); // This will hold *all* selected images across searches, with their dataset
 
     const [language, setLanguage] = useState('en');
-    const [dataset, setDataset] = useState('Wiki');
+
+    const [dataset, setDataset] = useState('wikiart'); // This refers to the dataset selected for the CURRENT search (lowercase value)
 
     const [submitLoading, setSubmitLoading] = useState(false);
     const [generateLoading, setGenerateLoading] = useState(false);
@@ -32,7 +33,11 @@ const Search = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ story: storyText, language: language, dataset: dataset }),
+            body: JSON.stringify({
+                story: storyText,
+                language: language,
+                dataset: dataset
+            }),
         })
         .then(response => {
             if (!response.ok) {
@@ -41,9 +46,14 @@ const Search = () => {
             return response.json();
         })
         .then(data => {
-            const newImages = data.images.map(imageUrl => {
+            const newImages = data.images.map(item => {
+                const imageUrl = typeof item === 'string' ? item : item.url;
                 const imageName = imageUrl.split('/').pop();
-                return { url: imageUrl, name: imageName };
+
+                const imageDataset = typeof item === 'object' && item.dataset
+                                    ? item.dataset.toLowerCase()
+                                    : dataset;
+                return { url: imageUrl, name: imageName, dataset: imageDataset };
             });
             setImages(newImages); // Update only the currently displayed images
         })
@@ -60,11 +70,9 @@ const Search = () => {
         setSelectedImages(prevSelected => {
             const isSelected = prevSelected.some(img => img.url === imageToToggle.url);
             if (isSelected) {
-                // If already selected, remove it
                 return prevSelected.filter(img => img.url !== imageToToggle.url);
             } else {
-                // If not selected, add it
-                return [...prevSelected, imageToToggle];
+                return [...prevSelected, { url: imageToToggle.url, name: imageToToggle.name, dataset: imageToToggle.dataset }];
             }
         });
     };
@@ -79,7 +87,19 @@ const Search = () => {
         setGenerateLoading(true);
         setResponseText(null); // Clear previous story
 
-        const imageUrls = selectedImages.map(img => img.url);
+        const selectedImagesByDataset = {};
+        const allDatasets = ['wikiart', 'semart', 'museum'];
+        allDatasets.forEach(ds => {
+            selectedImagesByDataset[ds] = [];
+        });
+
+        selectedImages.forEach(img => {
+            if (selectedImagesByDataset[img.dataset]) {
+                selectedImagesByDataset[img.dataset].push(img.url);
+            } else {
+                console.warn(`Image with unknown dataset '${img.dataset}' found. It will not be included in the generation request.`);
+            }
+        });
 
         fetch(`${API_URL}/api/generate-story`, {
             method: "POST",
@@ -87,8 +107,7 @@ const Search = () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                imageUrls: imageUrls,
-                dataset: dataset
+                selectedImagesByDataset: selectedImagesByDataset,
             }),
         })
         .then((response) => {
@@ -136,13 +155,28 @@ const Search = () => {
 
         if (!token) {
             setSaveMessage('Please log in to save the story to your account.');
+            setTimeout(() => setSaveMessage(''), 3000);
             return;
         }
 
         if (!responseText) {
             setSaveMessage('No story to save.');
+            setTimeout(() => setSaveMessage(''), 3000);
             return;
         }
+
+        const selectedImagesByDatasetForSave = {};
+        const allDatasets = ['wikiart', 'semart', 'museum'];
+        allDatasets.forEach(ds => {
+            selectedImagesByDatasetForSave[ds] = [];
+        });
+
+        selectedImages.forEach(img => {
+            if (selectedImagesByDatasetForSave[img.dataset]) {
+                selectedImagesByDatasetForSave[img.dataset].push(img.url);
+            }
+        });
+
 
         fetch(`${API_URL}/api/save-story`, {
             method: 'POST',
@@ -152,8 +186,7 @@ const Search = () => {
             },
             body: JSON.stringify({
                 storyText: responseText,
-                selectedImageUrls: selectedImages.map(img => img.url),
-                storyDataset: dataset,
+                selectedImagesByDataset: selectedImagesByDatasetForSave,
             }),
         })
         .then((response) => {
@@ -233,9 +266,9 @@ const Search = () => {
                                 value={dataset}
                                 onChange={handleDatasetChange}
                             >
-                                <option value="Wiki">Wiki</option>
-                                <option value="SemArt">SemArt</option>
-                                <option value="Museum">Museum</option>
+                                <option value="wikiart">Wikiart</option>
+                                <option value="semart">SemArt</option>
+                                <option value="museum">Museum</option>
                             </select>
                         </div>
                     </div>
@@ -248,23 +281,22 @@ const Search = () => {
                 </div>
             </div>
 
-            {(images.length > 0 || selectedImages.length > 0) && ( // <--- Display if current search has images OR if any images are selected
+            {(images.length > 0 || selectedImages.length > 0) && (
                 <div className="content-box">
                     <h1>Image Selection</h1>
                     <p>Our AI model chose these paintings as the ones most resembling your input.
                     <br></br>
                     Please **select one or more** of them to generate a story. Selected images will remain chosen across multiple searches.</p>
                     <div className="images-grid">
-                        {/* Display currently searched images */}
-                        {images.map((image, index) => (
+                        {images.map((image) => (
                             <div
-                                key={`search-${index}`} // <--- Use unique key for search results
+                                key={`search-${image.url}`}
                                 className={`image-container ${selectedImages.some(img => img.url === image.url) ? 'selected' : ''}`}
                                 onClick={() => handleImageToggle(image)}
                             >
                                 <img
                                     src={image.url}
-                                    alt={`Generated Image ${index + 1}`}
+                                    alt={`Generated Image ${image.name}`}
                                     className="generated-image"
                                 />
                                 <span className="image-name">{image.name}</span>
@@ -272,18 +304,18 @@ const Search = () => {
                         ))}
 
                         {/* Display already selected images that are NOT in the current search results */}
-                        {selectedImages.map((selectedImage, index) => {
+                        {selectedImages.map((selectedImage) => {
                             const isAlreadyDisplayed = images.some(img => img.url === selectedImage.url);
                             if (!isAlreadyDisplayed) {
                                 return (
                                     <div
-                                        key={`selected-${index}`} // <--- Use unique key for selected images
-                                        className="image-container selected" // Always marked as selected
+                                        key={`selected-${selectedImage.url}`}
+                                        className="image-container selected"
                                         onClick={() => handleImageToggle(selectedImage)}
                                     >
                                         <img
                                             src={selectedImage.url}
-                                            alt={`Selected Image ${index + 1}`}
+                                            alt={`Selected Image ${selectedImage.name}`}
                                             className="generated-image"
                                         />
                                         <span className="image-name">{selectedImage.name}</span>
@@ -300,11 +332,11 @@ const Search = () => {
                             onClick={handleGenerateStory}
                             disabled={generateLoading || selectedImages.length === 0}
                         >
-                            {generateLoading ? 'Generating Story...' : `Generate Story from ${selectedImages.length} Selected Image(s)`} {/* <--- Dynamic button text */}
+                            {generateLoading ? 'Generating Story...' : `Generate Story from ${selectedImages.length} Selected Image(s)`}
                         </button>
                         <button
                             className="submit-button"
-                            onClick={() => setSelectedImages([])} // <--- NEW: Clear all selected images
+                            onClick={() => setSelectedImages([])}
                             disabled={selectedImages.length === 0}
                         >
                             Clear All Selections

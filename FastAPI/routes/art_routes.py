@@ -64,7 +64,7 @@ filename_columns = {
 art_name_columns = {
     "wikiart": "filename",
     "semart": "TITLE",
-    "museum": "titleText"
+    "museum": "imageLinkHigh"
 }
 
 EXTERNAL_IP = os.getenv("EXTERNAL_IP", "localhost")
@@ -90,7 +90,7 @@ def get_top_k_images_from_text(text, dataset, k=3):
     for idx in indices[0]:
         if idx < len(metadataImages):
             image_url = (metadataImages.iloc[idx][filename]).removeprefix(prefix_1).removeprefix(prefix_2)
-            image_name = metadataImages.iloc[idx][name]
+            image_name = (metadataImages.iloc[idx][name]).removeprefix(prefix_1).removeprefix(prefix_2)
             images.append({'image_url': f"http://{EXTERNAL_IP}:5001/static/{dataset}/{image_url}", "art_name": image_name})
     return images
 

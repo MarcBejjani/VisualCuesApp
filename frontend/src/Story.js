@@ -1,10 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './Story.css';
 import SpeechInput from './SpeechInput';
-import ReadAloudButton from './components/ReadAloudButton';
+import { useReadAloud } from './contexts/ReadAloudContext';
 
 const Story = () => {
     const contentRef = useRef(null);
+    const { registerContent } = useReadAloud();
+
     const [storyText, setStoryText] = useState('');
     const [sectionsWithImages, setSectionsWithImages] = useState([]);
     const [selectedImagesPerSection, setSelectedImagesPerSection] = useState({});
@@ -18,6 +20,15 @@ const Story = () => {
     const [loading, setLoading] = useState(false);
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+
+    useEffect(() => {
+        registerContent(contentRef, [
+            "In the box below, you can enter text, or click a button to speak the words instead of typing.",
+            "To the right of the text box, you can select the language for processing the story.",
+            "Finally, there is a submit button to click once you are done inputting the text."
+        ]);
+        return () => registerContent(null);
+    }, [registerContent]);
 
     const handleSubmit = (k = numImagesPerSection) => {
         setLoading(true);
@@ -49,7 +60,7 @@ const Story = () => {
                 const enrichedImages = sectionData.images.map(imageItem => {
                     return {
                         url: imageItem.image_url,
-                        name: imageItem.art_name // Extract the art name
+                        name: imageItem.art_name
                     };
                 });
                 return {
@@ -75,7 +86,7 @@ const Story = () => {
         const token = localStorage.getItem('token');
         if (!token) {
             setSaveMessage('Please log in to save.');
-            setTimeout(() => setSaveMessage(''), 3000); // Clear message after 3 seconds
+            setTimeout(() => setSaveMessage(''), 3000);
             return;
         }
 
@@ -146,21 +157,9 @@ const Story = () => {
                     If you are not satisifed with the given result, you can click on the "Show 5 images per section" button to generate even more images.
                     <br></br>
                     <br></br>
-                    After inputting the text, you are given 3 options to play with. You can select the language you wrote it, which would allow the model to correct spelling errors
-                    and translate the text to english as our model only works in english for now. Then you can choose on of three databases to retrieve the paintings from, giving you a wider array of results.
-                    Finally, as stories can be quite long, they will be divided into different parts. You can choose if you want a broader or more conservative segmentation style.
-                    <br></br>
-                    <br></br>
-                    Feel free to keep on adding details to the text if the art pieces help you!
+                    After inputting the text, you are given 3 options to play with. You can choose the language of the text you wrote to help out our model, you can select one of 3 databases
+                    for more results, and you can select how the story will be segmented. It can either be broader, or more conservative.
                 </p>
-                <ReadAloudButton
-                    targetRef={contentRef}
-                    extraText={[
-                        "In the box below, you can enter text, or click a button to speak the words instead of typing.",
-                        "To the right of the text box, you can select the language for processing the story.",
-                        "Finally, there is a submit button to click once you are done inputting the text."
-                    ]}
-                />
             </div>
             <div className="content-box">
                 <h1>Write your story below!</h1>

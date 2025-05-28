@@ -1,10 +1,13 @@
-import React, { useState, useRef } from 'react';
+// src/Search.js
+import React, { useState, useRef, useEffect } from 'react';
 import './Search.css';
 import SpeechInput from './SpeechInput';
-import ReadAloudButton from './components/ReadAloudButton';
+// import ReadAloudButton from './components/ReadAloudButton'; // Removed ReadAloudButton import
+import { useReadAloud } from './contexts/ReadAloudContext'; // Import useReadAloud
 
 const Search = () => {
     const contentRef = useRef(null);
+    const { registerContent } = useReadAloud(); // Get registerContent from context
 
     const [storyText, setStoryText] = useState('');
     const [images, setImages] = useState([]); // This will hold images from the *current* search
@@ -21,6 +24,15 @@ const Search = () => {
     const [saveMessage, setSaveMessage] = useState('');
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+
+    // Register content for read aloud when the component mounts or contentRef changes
+    useEffect(() => {
+        registerContent(contentRef, [
+            "In the box below, you can enter text, or click a button to speak the words instead of typing.",
+            "Finally, there is a submit button to click once you are done inputting the text."
+        ]);
+        return () => registerContent(null); // Cleanup on unmount
+    }, [registerContent]);
 
     // Handle form submission to fetch images
     const handleSubmit = () => {
@@ -224,13 +236,7 @@ const Search = () => {
                     <br></br>
                     Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.
                 </p>
-                <ReadAloudButton
-                    targetRef={contentRef}
-                    extraText={[
-                        "In the box below, you can enter text, or click a button to speak the words instead of typing.",
-                        "Finally, there is a submit button to click once you are done inputting the text."
-                    ]}
-                />
+                {/* ReadAloudButton was here */}
             </div>
             <div className="content-box">
                 <h1>Enter some keywords to search for art!</h1>

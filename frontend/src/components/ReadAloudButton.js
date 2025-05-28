@@ -1,39 +1,24 @@
-import React, { useRef } from 'react';
-import { useTextToSpeech } from '../hooks/useTextToSpeech';
+import React from 'react';
+import { useReadAloud } from '../contexts/ReadAloudContext';
 import './ReadAloudButton.css';
 
-const ReadAloudButton = ({ targetRef, extraText = [], excludeClassName = '' }) => {
-    const { isReading, readAloud, cancel } = useTextToSpeech();
-    const buttonRef = useRef(null);
+const ReadAloudButton = () => {
+    const { readAloud, isReading, stopReading } = useReadAloud();
 
     const handleClick = () => {
         if (isReading) {
-            cancel();
-            return;
+            stopReading();
+        } else {
+            readAloud();
         }
-
-        if (!targetRef?.current) return;
-
-        const children = Array.from(targetRef.current.children);
-        const blocks = children
-            .filter(el =>
-                !el.contains(buttonRef.current) &&
-                (!excludeClassName || !el.classList.contains(excludeClassName))
-            )
-            .map(el => el.innerText.trim())
-            .filter(Boolean)
-            .concat(extraText);
-
-        readAloud(blocks);
     };
 
     return (
         <button
-            ref={buttonRef}
             onClick={handleClick}
-            className={`tts-button ${isReading ? 'reading' : ''}`}
+            className={`read-aloud-button ${isReading ? 'reading' : ''}`}
         >
-            {isReading ? '🔊 Reading... Click to Cancel' : '🔊 Read Aloud'}
+            {isReading ? 'Stop Reading' : 'Read Aloud'}
         </button>
     );
 };

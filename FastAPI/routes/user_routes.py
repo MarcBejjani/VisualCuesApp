@@ -90,9 +90,31 @@ async def get_profile(current_user: UserInDB = Depends(get_current_user)):
     return current_user
 
 @router.post("/save-story")
-async def save_art_search(story_text: dict, current_user: str = Depends(get_current_user), db = Depends(get_db)):
-    db.users.update_one({"_id": current_user}, {"$push": {"savedArtSearches": {"_id": ObjectId(), "text": story_text["storyText"], "dateAdded": datetime.utcnow()}}})
-    return {"message": "Story saved successfully"}
+async def save_art_search(story_data: dict, current_user: str = Depends(get_current_user), db = Depends(get_db)):
+    try:
+        story_text: str = story_data.get("storyText", "")
+        selected_images_by_dataset: Dict[str, List[str]] = story_data.get("selectedImagesByDataset", {})
+
+        if not story_text and not selected_images_by_dataset:
+            raise HTTPException(status_code=400, detail="No story text or selected images to save.")
+
+        db.users.update_one(
+            {"_id": current_user},
+            {
+                "$push": {
+                    "savedArtSearches": {
+                        "_id": ObjectId(),
+                        "text": story_text,
+                        "selectedImagesByDataset": selected_images_by_dataset,
+                        "dateAdded": datetime.utcnow(),
+                    }
+                }
+            },
+        )
+        return {"message": "Story saved successfully"}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=f"Server error: {e}")
 
 @router.post("/save-generation")
 async def save_story_generation(story_data: dict, current_user: str = Depends(get_current_user), db = Depends(get_db)):

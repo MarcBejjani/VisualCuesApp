@@ -47,10 +47,10 @@ const Search = () => {
         })
         .then(data => {
             const newImages = data.images.map(item => {
-                const imageUrl = typeof item === 'string' ? item : item.url;
-                const imageName = imageUrl.split('/').pop();
+                const imageUrl = item.image_url; 
+                const imageName = item.art_name;
 
-                const imageDataset = typeof item === 'object' && item.dataset
+                const imageDataset = typeof item === 'object' && item.dataset 
                                     ? item.dataset.toLowerCase()
                                     : dataset;
                 return { url: imageUrl, name: imageName, dataset: imageDataset };
@@ -288,6 +288,7 @@ const Search = () => {
                     <br></br>
                     Please **select one or more** of them to generate a story. Selected images will remain chosen across multiple searches.</p>
                     <div className="images-grid">
+                        {/* Display currently searched images */}
                         {images.map((image) => (
                             <div
                                 key={`search-${image.url}`}

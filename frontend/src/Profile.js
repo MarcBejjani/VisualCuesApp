@@ -5,7 +5,7 @@ const Profile = () => {
     const [username, setUsername] = useState('');
     const [savedArtSearches, setSavedArtSearches] = useState([]);
     const [savedStoryGenerations, setSavedStoryGenerations] = useState([]);
-    const [expandedItem, setExpandedItem] = useState(null); // Renamed from expandedStory
+    const [expandedItem, setExpandedItem] = useState(null);
     const [deleteMessage, setDeleteMessage] = useState('');
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
@@ -46,12 +46,12 @@ const Profile = () => {
     }, []);
 
     const handleItemClick = (item) => {
-        setExpandedItem(item); // Renamed from setExpandedStory
+        setExpandedItem(item);
         setDeleteMessage('');
     };
 
     const closeModal = () => {
-        setExpandedItem(null); // Renamed from setExpandedStory
+        setExpandedItem(null);
         setDeleteMessage('');
     };
 
@@ -71,7 +71,7 @@ const Profile = () => {
         if (expandedItem.hasOwnProperty('images')) {
             // It's a saved story generation
             deleteEndpoint = `${API_URL}/api/delete-generation/${expandedItem._id}`;
-        } else if (expandedItem.hasOwnProperty('text') && !expandedItem.hasOwnProperty('images')) {
+        } else if (expandedItem.hasOwnProperty('selectedImagesByDataset')) {
             // It's a saved art search
             deleteEndpoint = `${API_URL}/api/delete-art-search/${expandedItem._id}`;
         } else {
@@ -117,9 +117,9 @@ const Profile = () => {
                     {savedStoryGenerations.length > 0 ? (
                         savedStoryGenerations.map((story, index) => (
                             <div
-                                key={index}
+                                key={story._id || index}
                                 className="story-box"
-                                onClick={() => handleItemClick(story)} // Renamed onClick handler
+                                onClick={() => handleItemClick(story)}
                             >
                                 <h3><strong>Date:</strong> {new Date(story.dateAdded).toLocaleString()}</h3>
                                 <p>{story.text.substring(0, 50)}...</p>
@@ -137,9 +137,9 @@ const Profile = () => {
                     {savedArtSearches.length > 0 ? (
                         savedArtSearches.map((search, index) => (
                             <div
-                                key={index}
+                                key={search._id || index}
                                 className="story-box"
-                                onClick={() => handleItemClick(search)} // Renamed onClick handler
+                                onClick={() => handleItemClick(search)}
                             >
                                 <h3><strong>Date:</strong> {new Date(search.dateAdded).toLocaleString()}</h3>
                                 <p>{search.text.substring(0, 50)}...</p>
@@ -151,13 +151,14 @@ const Profile = () => {
                 </div>
             </div>
 
-            {expandedItem && ( // Renamed from expandedStory
+            {expandedItem && (
                 <div className="modal-history">
                     <div className="modal-history-content">
                         <span className="history-close-button" onClick={closeModal}>&times;</span>
                         <h3><strong>Date:</strong> {new Date(expandedItem.dateAdded).toLocaleString()}</h3>
                         <p>{expandedItem.text}</p>
-                        {expandedItem.images && Array.isArray(expandedItem.images) && expandedItem.images.length > 0 ? (
+                        {expandedItem.hasOwnProperty('images') && Array.isArray(expandedItem.images) && expandedItem.images.length > 0 ? (
+                            // This is for savedStoryGenerations (flat list of images)
                             <div className="modal-images-grid">
                                 {expandedItem.images.map((imageUrl, index) => (
                                     <img
@@ -168,9 +169,27 @@ const Profile = () => {
                                     />
                                 ))}
                             </div>
-                        ) : expandedItem.image ? (
-                            <img src={expandedItem.image} alt="Art Search" className="modal-history-image" />
+                        ) : expandedItem.hasOwnProperty('selectedImagesByDataset') && expandedItem.selectedImagesByDataset ? (
+                            // This is for savedArtSearches (structured images by dataset)
+                            <div className="modal-images-grid">
+                                {Object.entries(expandedItem.selectedImagesByDataset).map(([datasetName, urls]) => (
+                                    urls.length > 0 && (
+                                        <div key={datasetName} className="dataset-images-section">
+                                            <h4>{datasetName.charAt(0).toUpperCase() + datasetName.slice(1)} Images:</h4>
+                                            {urls.map((imageUrl, index) => (
+                                                <img
+                                                    key={`${datasetName}-${index}`}
+                                                    src={imageUrl}
+                                                    alt={`${datasetName} Image ${index + 1}`}
+                                                    className="modal-history-image"
+                                                />
+                                            ))}
+                                        </div>
+                                    )
+                                ))}
+                            </div>
                         ) : null}
+
                         <div className="modal-actions">
                             <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
                             {deleteMessage && <p className="delete-message">{deleteMessage}</p>}

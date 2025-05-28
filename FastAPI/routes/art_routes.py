@@ -61,6 +61,12 @@ filename_columns = {
     "museum": "imageLinkHigh"
 }
 
+art_name_columns = {
+    "wikiart": "filename",
+    "semart": "TITLE",
+    "museum": "titleText"
+}
+
 EXTERNAL_IP = os.getenv("EXTERNAL_IP", "localhost")
 
 prefix_1 = "/DATA/public/siamese/dataset_mrbab/art-foto/mod/intranet/"
@@ -77,13 +83,15 @@ def get_top_k_images_from_text(text, dataset, k=3):
     indexImages = index_by_dataset[dataset]
     metadataImages = metadata_by_dataset[dataset]
     filename = filename_columns[dataset]
+    name = art_name_columns[dataset]
 
     _, indices = indexImages.search(query_embedding, k)
     images = []
     for idx in indices[0]:
         if idx < len(metadataImages):
-            image_name = (metadataImages.iloc[idx][filename]).removeprefix(prefix_1).removeprefix(prefix_2)
-            images.append(f"http://{EXTERNAL_IP}:5001/static/{dataset}/{image_name}")
+            image_url = (metadataImages.iloc[idx][filename]).removeprefix(prefix_1).removeprefix(prefix_2)
+            image_name = metadataImages.iloc[idx][name]
+            images.append({'image_url': f"http://{EXTERNAL_IP}:5001/static/{dataset}/{image_url}", "art_name": image_name})
     return images
 
 

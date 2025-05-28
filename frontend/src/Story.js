@@ -11,9 +11,9 @@ const Story = () => {
     const [saveMessage, setSaveMessage] = useState('');
 
     const [language, setLanguage] = useState('en');
-    const [dataset, setDataset] = useState('Wiki');
+    const [dataset, setDataset] = useState('wikiart');
     const [segmentation, setSegmentation] = useState('conservative');
-    const [numImagesPerSection, setNumImagesPerSection] = useState(1); // <--- NEW STATE: k value, default to 1
+    const [numImagesPerSection, setNumImagesPerSection] = useState(1);
 
     const [loading, setLoading] = useState(false);
 
@@ -45,7 +45,19 @@ const Story = () => {
             return response.json();
         })
         .then(data => {
-            setSectionsWithImages(data.sections);
+            const processedSections = data.sections.map(sectionData => {
+                const enrichedImages = sectionData.images.map(imageItem => {
+                    return {
+                        url: imageItem.image_url,
+                        name: imageItem.art_name // Extract the art name
+                    };
+                });
+                return {
+                    ...sectionData,
+                    images: enrichedImages
+                };
+            });
+            setSectionsWithImages(processedSections);
         })
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
@@ -55,8 +67,8 @@ const Story = () => {
         });
     };
 
-    const handleImageClick = (imageUrl, sectionIndex) => {
-        setSelectedImagesPerSection(prev => ({ ...prev, [sectionIndex]: imageUrl }));
+    const handleImageClick = (imageObject, sectionIndex) => {
+        setSelectedImagesPerSection(prev => ({ ...prev, [sectionIndex]: imageObject.url }));
     };
 
     const handleSaveClick = () => {
@@ -130,7 +142,14 @@ const Story = () => {
                 <h1>Memory Reconstruction Instructions</h1>
                 <p>
                     The memory reconstruction tool allows you to input a story or a memory (or part of it).
-                    After submitting the text, our AI model will suggest some paintings from our database which can hopefully help you remember more details of the story.
+                    After submitting the text, our AI model will suggest the best matching painting from the selected database, which can hopefully help you remember more details of the story.
+                    If you are not satisifed with the given result, you can click on the "Show 5 images per section" button to generate even more images.
+                    <br></br>
+                    <br></br>
+                    After inputting the text, you are given 3 options to play with. You can select the language you wrote it, which would allow the model to correct spelling errors
+                    and translate the text to english as our model only works in english for now. Then you can choose on of three databases to retrieve the paintings from, giving you a wider array of results.
+                    Finally, as stories can be quite long, they will be divided into different parts. You can choose if you want a broader or more conservative segmentation style.
+                    <br></br>
                     <br></br>
                     Feel free to keep on adding details to the text if the art pieces help you!
                 </p>
@@ -177,9 +196,9 @@ const Story = () => {
                                 value={dataset}
                                 onChange={handleDatasetChange}
                             >
-                                <option value="Wiki">Wiki</option>
-                                <option value="SemArt">SemArt</option>
-                                <option value="Museum">Museum</option>
+                                <option value="wikiart">Wikiart</option>
+                                <option value="semart">SemArt</option>
+                                <option value="museum">Museum</option>
                             </select>
                         </div>
                         <div className="select-group">
@@ -211,17 +230,18 @@ const Story = () => {
                         <div key={sectionIndex} className="section-images-container">
                             {sectionData.section && <p><strong>Section:</strong> {sectionData.section}</p>}
                             <div className="images-grid">
-                                {sectionData.images.map((imageUrl, imageIndex) => (
+                                {sectionData.images.map((imageItem, imageIndex) => (
                                     <div
                                         key={`${sectionIndex}-${imageIndex}`}
-                                        className={`image-container ${selectedImagesPerSection[sectionIndex] === imageUrl ? 'selected' : ''}`}
-                                        onClick={() => handleImageClick(imageUrl, sectionIndex)}
+                                        className={`image-container ${selectedImagesPerSection[sectionIndex] === imageItem.url ? 'selected' : ''}`}
+                                        onClick={() => handleImageClick(imageItem, sectionIndex)}
                                     >
                                         <img
-                                            src={imageUrl}
+                                            src={imageItem.url}
                                             alt={`Section ${sectionIndex + 1} Image ${imageIndex + 1}`}
                                             className="generated-image"
                                         />
+                                        <span className="image-name">{imageItem.name}</span>
                                     </div>
                                 ))}
                             </div>
@@ -232,7 +252,7 @@ const Story = () => {
                             <button
                                 className="submit-button"
                                 onClick={handleRequestMoreImages}
-                                disabled={loading || !storyText.trim()} // Disable if loading or no story text
+                                disabled={loading || !storyText.trim()}
                             >
                                 Show 5 Images per Section
                             </button>

@@ -1,9 +1,10 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime
 
 class SavedArtSearch(BaseModel):
     text: str
+    selectedImagesByDataset: Dict[str, List[str]] = Field(default_factory=dict)
     dateAdded: datetime
     _id: Optional[str] = None
 

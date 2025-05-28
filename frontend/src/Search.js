@@ -234,8 +234,16 @@ const Search = () => {
                     The art exploration tool allows you to search for art pieces by typing in some keywords.
                     Our AI model will return some paintings from our database, and you can then select the one that you find most interesting, and the model will then generate a story based on it.
                     <br></br>
+                    <br></br>
                     Finally, if the generated story is not to your liking, you can choose to regenerate a new story, or start over.
+                    <br></br>
+                    <br></br>
+                    Before submitting, you can play with 2 options
                 </p>
+                <ol className="instructions-list">
+                    <li>You can select the language that you used in order to help our model correct the spelling and translate to english</li>
+                    <li>You can choose one of 3 databases for our model to search from, giving you a wider array of results</li>
+                </ol>
                 {/* ReadAloudButton was here */}
             </div>
             <div className="content-box">

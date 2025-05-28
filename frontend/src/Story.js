@@ -153,13 +153,17 @@ const Story = () => {
                 <h1>Memory Reconstruction Instructions</h1>
                 <p>
                     The memory reconstruction tool allows you to input a story or a memory (or part of it).
-                    After submitting the text, our AI model will suggest the best matching painting from the selected database, which can hopefully help you remember more details of the story.
+                    After submitting the text, our AI model will segment the text and suggest the best matching painting per section from the selected database, which can hopefully help you remember more details of the story.
                     If you are not satisifed with the given result, you can click on the "Show 5 images per section" button to generate even more images.
                     <br></br>
                     <br></br>
-                    After inputting the text, you are given 3 options to play with. You can choose the language of the text you wrote to help out our model, you can select one of 3 databases
-                    for more results, and you can select how the story will be segmented. It can either be broader, or more conservative.
+                    After inputting the text, you are given 3 options to play with.
                 </p>
+                <ol className="instructions-list">
+                    <li>You can select the language that you used in order to help our model correct the spelling and translate to english</li>
+                    <li>You can choose one of 3 databases for our model to search from, giving you a wider array of results</li>
+                    <li>You can choose if you want to text to be segmented more conservatively or broadely</li>
+                </ol>
             </div>
             <div className="content-box">
                 <h1>Write your story below!</h1>

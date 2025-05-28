@@ -39,13 +39,11 @@ const Navbar = () => {
 
     return (
         <nav className="navbar navbar-expand-lg navbar-dark custom-navbar">
-            <Link to="/">
-                <img src={logo} alt="Logo" className="logo" />
-            </Link>
-            <button id='accessibility-button' onClick={handleOpenPanel}>Accessibility</button>
             <div className="center-text">
                 Art Evoke
             </div>
+            <button id='accessibility-button' onClick={handleOpenPanel}>Accessibility</button>
+        
             <div className="nav-links">
                 <Link to="/">Home</Link>
                 <Link to="/story">Memory Reconstruction</Link>

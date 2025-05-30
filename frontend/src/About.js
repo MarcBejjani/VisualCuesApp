@@ -26,10 +26,6 @@ const About = () => {
                     the potential of AI tools to support scalable cognitive stimulation in dementia care.
                 </p>
             </div>
-            <div className='content-box'>
-            <h1>Thesis Poster</h1>
-            <img src={poster} alt='poster'></img>
-            </div>
         </div>
     );
 };

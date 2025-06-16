@@ -40,7 +40,7 @@ const Search = () => {
         setResponseText(null);
         setImages([]); // Clear *only* the currently displayed images
 
-        fetch(`${API_URL}/api/search-images`, {
+        fetch(`/api/search-images`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ const Search = () => {
             }
         });
 
-        fetch(`${API_URL}/api/generate-story`, {
+        fetch(`/api/generate-story`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -190,7 +190,7 @@ const Search = () => {
         });
 
 
-        fetch(`${API_URL}/api/save-story`, {
+        fetch(`/api/save-story`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

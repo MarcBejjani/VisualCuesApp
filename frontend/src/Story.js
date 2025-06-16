@@ -19,7 +19,7 @@ const Story = () => {
 
     const [loading, setLoading] = useState(false);
 
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+    // const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
     useEffect(() => {
         registerContent(contentRef, [
@@ -36,7 +36,7 @@ const Story = () => {
         setSelectedImagesPerSection({});
         setNumImagesPerSection(k);
 
-        fetch(`${API_URL}/api/select-images-per-section`, {
+        fetch(`/api/select-images-per-section`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ const Story = () => {
             segmentation: segmentation,
         };
 
-        fetch(`${API_URL}/api/save-generation`, {
+        fetch(`/api/save-generation`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

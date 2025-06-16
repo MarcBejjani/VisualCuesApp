@@ -21,7 +21,10 @@ app.add_middleware(
 )
 
 STATIC_DIR = os.getenv("STATIC_DIR", "static")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+# app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/art-images/wikiart", StaticFiles(directory=os.path.join(STATIC_DIR, "wikiart")), name="wikiart_images")
+app.mount("/art-images/semart", StaticFiles(directory=os.path.join(STATIC_DIR, "semart")), name="semart_images")
+app.mount("/art-images/museum", StaticFiles(directory=os.path.join(STATIC_DIR, "museum")), name="museum_images")
 
 # Include routers
 app.include_router(art_routes.router, prefix="/api", tags=["Art"])

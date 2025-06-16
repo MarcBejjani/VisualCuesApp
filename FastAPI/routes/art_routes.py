@@ -67,10 +67,9 @@ art_name_columns = {
     "museum": "imageLinkHigh"
 }
 
-EXTERNAL_IP = os.getenv("EXTERNAL_IP", "localhost")
-
 prefix_1 = "/DATA/public/siamese/dataset_mrbab/art-foto/mod/intranet/"
 prefix_2 = "/DATA/public/siamese/dataset_mrbab/art-foto/old/intranet/"
+prefix_3 = "/DATA/public/siamese/dataset_mrbab/art-foto/sculpt19/intranet/"
 
 def get_gte_embedding(text):
     embedding = embedding_model.encode([text], convert_to_numpy=True)
@@ -91,7 +90,7 @@ def get_top_k_images_from_text(text, dataset, k=3):
         if idx < len(metadataImages):
             image_url = (metadataImages.iloc[idx][filename]).removeprefix(prefix_1).removeprefix(prefix_2)
             image_name = (metadataImages.iloc[idx][name]).removeprefix(prefix_1).removeprefix(prefix_2)
-            images.append({'image_url': f"http://{EXTERNAL_IP}:5001/static/{dataset}/{image_url}", "art_name": image_name})
+            images.append({'image_url': f"/art-images/{dataset}/{image_url}", "art_name": image_name})
     return images
 
 
@@ -123,7 +122,7 @@ async def generate_story(body: dict):
     cleaned_filenames_by_dataset = {}
 
     for key, urls in data.items():
-        prefix = f"http://{EXTERNAL_IP}:5001/static/{key}/"
+        prefix = f"/art-images/{key}/"
         cleaned_filenames_by_dataset[key] = [
             url.replace(prefix, '') for url in urls
         ]

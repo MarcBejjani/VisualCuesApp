@@ -15,7 +15,7 @@ const Profile = () => {
         if (!token) return;
 
         try {
-            const response = await fetch(`${API_URL}/api/retrieve-searches`, {
+            const response = await fetch(`/api/retrieve-searches`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,10 +70,10 @@ const Profile = () => {
         let deleteEndpoint = '';
         if (expandedItem.hasOwnProperty('images')) {
             // It's a saved story generation
-            deleteEndpoint = `${API_URL}/api/delete-generation/${expandedItem._id}`;
+            deleteEndpoint = `/api/delete-generation/${expandedItem._id}`;
         } else if (expandedItem.hasOwnProperty('selectedImagesByDataset')) {
             // It's a saved art search
-            deleteEndpoint = `${API_URL}/api/delete-art-search/${expandedItem._id}`;
+            deleteEndpoint = `/api/delete-art-search/${expandedItem._id}`;
         } else {
             console.error('Unknown item type for deletion.');
             return;

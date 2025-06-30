@@ -18,14 +18,7 @@ This thesis explores how artificial intelligence can support non-drug interventi
 
 ## 📁 Project Structure
 
-project-root/
-├── FastAPI/ # Backend service (FastAPI)
-├── frontend/ # Frontend service (React)
-├── nginx/ # NGINX config for reverse proxy
-├── docker-compose.yml # Orchestrates all containers
-├── LICENSE
-├── README.md
-├── package.json # Root config and dev script
+<pre> project-root/ ├── FastAPI/ # Backend service (FastAPI) │ ├── main.py # Entry point for the FastAPI app │ └── new_venv/ # Python virtual environment ├── frontend/ # Frontend service (React) │ ├── src/ # React source files │ └── package.json # Frontend dependencies and scripts ├── nginx/ # NGINX config for production deployment │ └── default.conf # NGINX site configuration ├── docker-compose.yml # Orchestrates frontend, backend, and nginx containers ├── LICENSE # Project license (ISC) ├── README.md # Project documentation ├── package.json # Root-level scripts and config (e.g. for concurrently) </pre>
 
 ---
 
